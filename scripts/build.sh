@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds a Release HomebrewFontGallery.app into build/Release (git-ignored).
+# Builds a Release "Homebrew Font Gallery.app" into build/Release (git-ignored).
 #
 #   scripts/build.sh          build the app
 #   scripts/build.sh --test   run the unit tests first, and stop if they fail
@@ -13,9 +13,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 SCHEME="HomebrewFontGallery"
+APP_NAME="Homebrew Font Gallery"
 DERIVED_DATA="build/DerivedData"
 OUT_DIR="build/Release"
-APP="$OUT_DIR/$SCHEME.app"
+APP="$OUT_DIR/$APP_NAME.app"
 
 run_tests=false
 make_zip=false
@@ -48,7 +49,7 @@ xcodebuild \
 
 mkdir -p "$OUT_DIR"
 rm -rf "$APP"
-ditto "$DERIVED_DATA/Build/Products/Release/$SCHEME.app" "$APP"
+ditto "$DERIVED_DATA/Build/Products/Release/$APP_NAME.app" "$APP"
 echo "Built $APP"
 
 if $make_zip; then

@@ -59,7 +59,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' build/Release/HomebrewFontGallery.app/Contents/Info.plist)"
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' 'build/Release/Homebrew Font Gallery.app/Contents/Info.plist')"
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             tag="$GITHUB_REF_NAME"
             title="Homebrew Font Gallery $tag"
