@@ -1,0 +1,76 @@
+name: Release
+
+# Every push to main builds the app and publishes it as a GitHub Release
+# named after the app version and the build number (e.g. 1.0 build 12).
+# Pushing a tag like v1.0 publishes a release under that tag instead.
+# Running the workflow manually builds the app and keeps the zip as a
+# workflow artifact without creating a release.
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The app isn't scaffolded yet. Until the Xcode project lands, skip the
+      # build instead of failing every push to main.
+      - name: Check for Xcode project
+        id: project
+        run: |
+          if [[ -d HomebrewFontGallery.xcodeproj ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::HomebrewFontGallery.xcodeproj not found, skipping the build"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select newest Xcode
+        if: steps.project.outputs.exists == 'true'
+        run: |
+          xcode="$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -n 1)"
+          echo "Using $xcode"
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
+      - name: Test and build
+        if: steps.project.outputs.exists == 'true'
+        run: scripts/build.sh --test --zip
+
+      - name: Upload build artifact
+        if: steps.project.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HomebrewFontGallery
+          path: build/Release/HomebrewFontGallery.zip
+          if-no-files-found: error
+
+      - name: Publish release
+        if: steps.project.outputs.exists == 'true' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' build/Release/HomebrewFontGallery.app/Contents/Info.plist)"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="$GITHUB_REF_NAME"
+            title="Homebrew Font Gallery $tag"
+          else
+            tag="v$version-build.$GITHUB_RUN_NUMBER"
+            title="Homebrew Font Gallery $version (build $GITHUB_RUN_NUMBER)"
+          fi
+          asset="build/Release/HomebrewFontGallery-$tag.zip"
+          mv build/Release/HomebrewFontGallery.zip "$asset"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$asset" --clobber
+          else
+            gh release create "$tag" "$asset" --target "$GITHUB_SHA" --title "$title" --generate-notes
+          fi
