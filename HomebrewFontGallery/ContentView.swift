@@ -8,6 +8,8 @@ struct ContentView: View {
     /// How many cards fit across the grid, for the arrow keys. It is kept outside the
     /// view's state so that resizing the window doesn't redraw the whole window.
     @State private var gridLayout = GridLayout()
+    /// True when the grid is too narrow for the toolbar's filter tabs.
+    @State private var isCompact = false
     private static let detailsWidth: CGFloat = 400
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
@@ -97,14 +99,32 @@ struct ContentView: View {
             .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Picker("Show", selection: $model.filter) {
-                        ForEach(GalleryModel.Filter.allCases) { filter in
-                            Text(filter.rawValue).tag(filter)
+                // The filter is three tabs in the centre while there is room for them, and
+                // folds into a menu when the grid is too narrow.
+                if isCompact {
+                    ToolbarItem {
+                        Menu {
+                            Picker("Show", selection: $model.filter) {
+                                ForEach(GalleryModel.Filter.allCases) { filter in
+                                    Text(filter.rawValue).tag(filter)
+                                }
+                            }
+                            .pickerStyle(.inline)
+                        } label: {
+                            Label("Show", systemImage: "line.3.horizontal.decrease")
                         }
+                        .help("Show all fonts, or only the ones that are installed or not installed.")
                     }
-                    .pickerStyle(.segmented)
-                    .help("Show all fonts, or only the ones that are installed or not installed.")
+                } else {
+                    ToolbarItem(placement: .principal) {
+                        Picker("Show", selection: $model.filter) {
+                            ForEach(GalleryModel.Filter.allCases) { filter in
+                                Text(filter.rawValue).tag(filter)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .help("Show all fonts, or only the ones that are installed or not installed.")
+                    }
                 }
                 ToolbarItem {
                     Button {
@@ -136,7 +156,9 @@ struct ContentView: View {
             } message: {
                 Text(cancelMessage)
             }
-            .frame(minWidth: 760, minHeight: 460)
+            // The grid asks for one column at least. Beside the details pane the system
+            // keeps it wider, at 340 pt, which is two columns.
+            .frame(minWidth: Self.cardWidth + 64, minHeight: 460)
             .onChange(of: model.selection) { _, selection in
                 if let selection {
                     lastSelection = selection
@@ -209,6 +231,8 @@ struct ContentView: View {
     /// A wider window fits more cards across, and the rest reflow.
     private static let cardWidth = FontThumbnailView.side
     private static let cardSpacing: CGFloat = 20
+    /// Below this width of grid, the title and the filter tabs no longer fit side by side.
+    private static let compactWidth: CGFloat = 620
 
     /// How many cards an adaptive grid fits across the given width.
     static func columnCount(forWidth width: CGFloat) -> Int {
@@ -238,6 +262,12 @@ struct ContentView: View {
                     GeometryReader { geometry in
                         Color.clear.onChange(of: geometry.size.width, initial: true) { _, width in
                             gridLayout.columnCount = Self.columnCount(forWidth: width - 48)
+                            // This only changes as the width crosses one point, so it is cheap.
+                            let compact = width < Self.compactWidth
+                            if compact != isCompact {
+                                isCompact = compact
+                            }
+
                         }
                     }
                 }
