@@ -10,6 +10,8 @@ struct ContentView: View {
     @State private var gridLayout = GridLayout()
     /// True when the grid is too narrow for the toolbar's filter tabs.
     @State private var isCompact = false
+    /// False while the window is first opening, when the pane appears without resizing it.
+    @State private var windowFollowsPane = false
     private static let detailsWidth: CGFloat = 400
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
@@ -70,6 +72,13 @@ struct ContentView: View {
             if model.selection == nil, !lastSelection.isEmpty {
                 model.selection = lastSelection
             }
+            // The window opens at the size it was left, pane included, so only later
+            // changes to the pane resize it.
+            try? await Task.sleep(for: .seconds(1))
+            windowFollowsPane = true
+        }
+        .onChange(of: showingDetails.wrappedValue) { _, isShowing in
+            resizeWindow(paneIsShowing: isShowing)
         }
     }
 
@@ -175,6 +184,31 @@ struct ContentView: View {
         Color.clear
             .frame(width: (Self.detailsWidth - Self.actionWidth - 26) / 2, height: 28)
             .fixedSize()
+    }
+
+    /// Widens the window by the pane's width as the pane slides out, and narrows it again as
+    /// the pane goes, so the grid keeps its width and its cards stay where they are.
+    private func resizeWindow(paneIsShowing: Bool) {
+        guard windowFollowsPane,
+              let window = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }),
+              !window.styleMask.contains(.fullScreen) else { return }
+        // Wait a moment, so the window's smallest size has caught up with the pane.
+        DispatchQueue.main.async {
+            var frame = window.frame
+            frame.size.width += paneIsShowing ? Self.detailsWidth : -Self.detailsWidth
+            frame.size.width = max(frame.size.width, window.minSize.width)
+            if let screen = window.screen?.visibleFrame {
+                // Stay on the screen: slide left if the right edge would go off it.
+                frame.size.width = min(frame.size.width, screen.width)
+                if frame.maxX > screen.maxX {
+                    frame.origin.x = max(screen.minX, screen.maxX - frame.width)
+                }
+            }
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.25
+                window.animator().setFrame(frame, display: true)
+            }
+        }
     }
 
     /// The details pane slides out whenever a font is selected, unless it has been hidden.
