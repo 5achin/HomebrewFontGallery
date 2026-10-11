@@ -55,7 +55,9 @@ final class GalleryModel {
         let message: String
     }
 
-    private(set) var fonts: [FontCask] = []
+    private(set) var fonts: [FontCask] = [] {
+        didSet { updateVisibleFonts() }
+    }
     private(set) var loadState = LoadState.loading
     private(set) var activity: Activity?
     private(set) var status: Status?
@@ -66,9 +68,15 @@ final class GalleryModel {
 
     var selection: FontCask.ID?
     /// The category chosen in the sidebar, or nil for all fonts.
-    var category: FontCategory.ID?
-    var searchText = ""
-    var filter = Filter.all
+    var category: FontCategory.ID? {
+        didSet { updateVisibleFonts() }
+    }
+    var searchText = "" {
+        didSet { updateVisibleFonts() }
+    }
+    var filter = Filter.all {
+        didSet { updateVisibleFonts() }
+    }
 
     private let brew: BrewService
     private var task: Task<Void, Never>?
@@ -83,8 +91,13 @@ final class GalleryModel {
 
     var isBusy: Bool { activity != nil }
 
-    var visibleFonts: [FontCask] {
-        GalleryModel.filter(fonts, by: filter, searchText: searchText, category: categories.first { $0.id == category })
+    /// The fonts the grid shows. It is worked out when what it depends on changes, and
+    /// kept, because the window asks for it many times a second while it is resized.
+    private(set) var visibleFonts: [FontCask] = []
+
+    private func updateVisibleFonts() {
+        visibleFonts = GalleryModel.filter(fonts, by: filter, searchText: searchText,
+                                           category: categories.first { $0.id == category })
     }
 
     nonisolated static func filter(_ fonts: [FontCask], by filter: Filter, searchText: String,
@@ -113,6 +126,7 @@ final class GalleryModel {
                 .filter { $0.isInstallable || $0.isInstalled }
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             categories = FontCategory.top(GalleryModel.categoryLimit, in: fonts)
+            updateVisibleFonts()
             loadState = .loaded
         } catch BrewError.notInstalled {
             loadState = .homebrewMissing

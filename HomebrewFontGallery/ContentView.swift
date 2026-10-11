@@ -5,7 +5,9 @@ struct ContentView: View {
     @State private var confirmingUninstall: FontCask?
     @State private var confirmingCancel = false
     @State private var detailsHidden = false
-    @State private var columnCount = 3
+    /// How many cards fit across the grid, for the arrow keys. It is kept outside the
+    /// view's state so that resizing the window doesn't redraw the whole window.
+    @State private var gridLayout = GridLayout()
     private static let detailsWidth: CGFloat = 400
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
@@ -204,7 +206,7 @@ struct ContentView: View {
 
     /// Every card is this wide, the size of Font Book's, whatever the window's size.
     /// A wider window fits more cards across, and the rest reflow.
-    private static let cardWidth: CGFloat = 116
+    private static let cardWidth = FontThumbnailView.side
     private static let cardSpacing: CGFloat = 20
 
     /// How many cards an adaptive grid fits across the given width.
@@ -228,14 +230,13 @@ struct ContentView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel(font.isInstalled ? "\(font.name), installed" : font.name)
                         .accessibilityAddTraits(model.selection == font.token ? .isSelected : [])
-                        .id(font.token)
                     }
                 }
                 .padding(24)
                 .background {
                     GeometryReader { geometry in
                         Color.clear.onChange(of: geometry.size.width, initial: true) { _, width in
-                            columnCount = Self.columnCount(forWidth: width - 48)
+                            gridLayout.columnCount = Self.columnCount(forWidth: width - 48)
                         }
                     }
                 }
@@ -285,8 +286,8 @@ struct ContentView: View {
         switch direction {
         case .left: step = -1
         case .right: step = 1
-        case .up: step = -columnCount
-        case .down: step = columnCount
+        case .up: step = -gridLayout.columnCount
+        case .down: step = gridLayout.columnCount
         @unknown default: return
         }
         let target = current + step
@@ -361,4 +362,9 @@ struct ContentView: View {
 
     private var stopLabel: String { isInstalling ? "Stop Installing" : "Stop Uninstalling" }
     private var keepLabel: String { isInstalling ? "Keep Installing" : "Keep Uninstalling" }
+}
+
+/// Plain storage for the grid's column count. Changing it redraws nothing.
+private final class GridLayout {
+    var columnCount = 3
 }

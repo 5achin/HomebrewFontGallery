@@ -12,11 +12,13 @@ struct FontThumbnailView: View {
     private static let sample = "Aa"
     private static let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
 
+    /// The card is one size everywhere, so its parts are laid out with plain numbers.
+    /// Measuring each card as the window resized made resizing choppy.
+    static let side: CGFloat = 116
+
     /// A white card with the sample in the middle and the number of styles along the bottom.
     private var card: some View {
-        GeometryReader { geometry in
-            let side = geometry.size.width
-            // The saved thumbnail is drawn for a card of the grid's own width.
+        VStack(spacing: 0) {
             ZStack {
                 if let thumbnail {
                     Image(nsImage: thumbnail)
@@ -28,24 +30,26 @@ struct FontThumbnailView: View {
                         .controlSize(.small)
                 } else {
                     Image(systemName: "eye.slash")
-                        .font(.system(size: side * 0.18))
+                        .font(.system(size: Self.side * 0.18))
                         .foregroundStyle(.tertiary)
-                        .help("Install this font to preview it.")
                 }
             }
-            .frame(width: side, height: side * 0.8)
+            .frame(width: Self.side, height: Self.side * 0.76)
 
-            if let styleCount {
-                Text(styleCount)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .frame(width: side, height: side * 0.2, alignment: .top)
-                    .offset(y: side * 0.76)
-            }
+            Text(styleCount ?? "")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .frame(width: Self.side, height: Self.side * 0.24, alignment: .top)
         }
-        .background(Color(nsColor: .controlBackgroundColor), in: Self.shape)
-        .clipShape(Self.shape)
+        .frame(width: Self.side, height: Self.side)
+        // The shadow belongs to the plain card behind, which is cheaper to draw than
+        // a shadow of everything on it.
+        .background {
+            Self.shape
+                .fill(Color(nsColor: .controlBackgroundColor))
+                .shadow(color: Color(nsColor: .shadowColor).opacity(0.1), radius: 3, y: 1)
+        }
         .overlay {
             if isSelected {
                 Self.shape.strokeBorder(Color.accentColor, lineWidth: 3)
@@ -53,7 +57,6 @@ struct FontThumbnailView: View {
                 Self.shape.strokeBorder(.separator)
             }
         }
-        .shadow(color: Color(nsColor: .shadowColor).opacity(0.1), radius: 3, y: 1)
     }
 
     private var styleCount: String? {
@@ -72,7 +75,6 @@ struct FontThumbnailView: View {
     var body: some View {
         VStack(spacing: 8) {
             card
-                .aspectRatio(1, contentMode: .fit)
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(font.name)
