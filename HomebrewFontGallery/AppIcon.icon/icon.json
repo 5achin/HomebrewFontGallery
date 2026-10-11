@@ -1,17 +1,17 @@
 {
   "fill" : {
     "linear-gradient" : [
-      "display-p3:0.82,0.25,0.19,1.00",
-      "display-p3:0.54,0.10,0.10,1.00"
+      "display-p3:1.00,0.70,0.22,1.00",
+      "display-p3:0.94,0.42,0.07,1.00"
     ]
   },
   "groups" : [
     {
       "layers" : [
         {
-          "glass" : true,
-          "image-name" : "letter.svg",
-          "name" : "letter"
+          "glass" : false,
+          "image-name" : "letters.svg",
+          "name" : "letters"
         }
       ],
       "shadow" : {
@@ -27,16 +27,35 @@
     {
       "layers" : [
         {
-          "glass" : false,
-          "image-name" : "pages.svg",
-          "name" : "pages"
+          "glass" : true,
+          "image-name" : "card.svg",
+          "name" : "card"
         }
       ],
       "shadow" : {
-        "kind" : "neutral",
+        "kind" : "layer-color",
         "opacity" : 0.5
       },
-      "specular" : false,
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "cards-behind.svg",
+          "name" : "cards behind",
+          "opacity" : 0.4
+        }
+      ],
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
       "translucency" : {
         "enabled" : false,
         "value" : 0.5
