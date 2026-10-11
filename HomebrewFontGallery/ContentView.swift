@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var confirmingUninstall: FontCask?
     @State private var confirmingCancel = false
     @State private var detailsHidden = false
+    @State private var columnCount = 3
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
 
@@ -128,13 +129,21 @@ struct ContentView: View {
 
     // MARK: Grid
 
-    private static let columnCount = 3
+    /// Cards keep to this width, so there are three across beside the details pane in a
+    /// window of the default size, and more when the window is wider or the pane is hidden.
+    private static let cardWidth: ClosedRange<CGFloat> = 170...230
+    private static let cardSpacing: CGFloat = 24
+
+    /// How many cards an adaptive grid fits across the given width.
+    static func columnCount(forWidth width: CGFloat) -> Int {
+        max(1, Int((width + cardSpacing) / (cardWidth.lowerBound + cardSpacing)))
+    }
 
     private var grid: some View {
         let fonts = model.visibleFonts
         return ScrollViewReader { proxy in
             ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: Self.columnCount), spacing: 16) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.cardWidth.lowerBound, maximum: Self.cardWidth.upperBound), spacing: 24)], spacing: 20) {
                     ForEach(fonts) { font in
                         Button {
                             model.selection = font.token
@@ -149,7 +158,14 @@ struct ContentView: View {
                         .id(font.token)
                     }
                 }
-                .padding()
+                .padding(24)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.onChange(of: geometry.size.width, initial: true) { _, width in
+                            columnCount = Self.columnCount(forWidth: width - 48)
+                        }
+                    }
+                }
             }
             .focusable()
             .focusEffectDisabled()
@@ -162,7 +178,13 @@ struct ContentView: View {
             .onAppear {
                 // Bring the restored selection into view once the grid has its thumbnails.
                 guard let selection = model.selection ?? (lastSelection.isEmpty ? nil : lastSelection) else { return }
-                Task { proxy.scrollTo(selection, anchor: .center) }
+                Task {
+                    // The grid only estimates where a far-off card is, so the first jump can land
+                    // short. A second one, once the cards near it exist, lands on it.
+                    proxy.scrollTo(selection, anchor: .center)
+                    try? await Task.sleep(for: .milliseconds(300))
+                    proxy.scrollTo(selection, anchor: .center)
+                }
             }
             .overlay {
                 if fonts.isEmpty {
@@ -188,8 +210,8 @@ struct ContentView: View {
         switch direction {
         case .left: step = -1
         case .right: step = 1
-        case .up: step = -Self.columnCount
-        case .down: step = Self.columnCount
+        case .up: step = -columnCount
+        case .down: step = columnCount
         @unknown default: return
         }
         let target = current + step

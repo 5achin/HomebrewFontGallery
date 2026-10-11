@@ -10,7 +10,59 @@ struct FontThumbnailView: View {
     @State private var isLoading = true
 
     private static let sample = "Aa"
-    private static let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
+    private static let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+
+    /// A white card with the sample in the middle and the number of styles along the bottom.
+    private var card: some View {
+        GeometryReader { geometry in
+            let side = geometry.size.width
+            ZStack {
+                if let face {
+                    Text(Self.sample)
+                        .font(Font(face.font(size: side * 0.36)))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                        .padding(.horizontal, side * 0.08)
+                } else if isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "eye.slash")
+                        .font(.system(size: side * 0.18))
+                        .foregroundStyle(.tertiary)
+                        .help("Install this font to preview it.")
+                }
+            }
+            .frame(width: side, height: side * 0.8)
+
+            if let styleCount {
+                Text(styleCount)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .frame(width: side, height: side * 0.2, alignment: .top)
+                    .offset(y: side * 0.76)
+            }
+        }
+        .background(Color(nsColor: .controlBackgroundColor), in: Self.shape)
+        .clipShape(Self.shape)
+        .overlay {
+            if isSelected {
+                Self.shape.strokeBorder(Color.accentColor, lineWidth: 3)
+            } else {
+                Self.shape.strokeBorder(.separator)
+            }
+        }
+        .shadow(color: Color(nsColor: .shadowColor).opacity(0.1), radius: 3, y: 1)
+    }
+
+    private var styleCount: String? {
+        switch font.fontFiles.count {
+        case 0: return nil
+        case 1: return "1 style"
+        default: return "\(font.fontFiles.count) styles"
+        }
+    }
 
     private struct Key: Equatable {
         let token: String
@@ -18,37 +70,14 @@ struct FontThumbnailView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Self.shape.fill(.fill.quaternary)
-                if let face {
-                    Text(Self.sample)
-                        .font(Font(face.font(size: 56)))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.4)
-                        .padding(.horizontal, 12)
-                } else if isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Image(systemName: "eye.slash")
-                        .font(.title)
-                        .foregroundStyle(.tertiary)
-                        .help("Install this font to preview it.")
-                }
-            }
-            .frame(height: 120)
-            .clipShape(Self.shape)
-            .overlay {
-                if isSelected {
-                    Self.shape.strokeBorder(Color.accentColor, lineWidth: 3)
-                }
-            }
+        VStack(spacing: 10) {
+            card
+                .aspectRatio(1, contentMode: .fit)
 
-            HStack(spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(font.name)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
                 if isBusy {
                     ProgressView()
                         .controlSize(.mini)
@@ -59,6 +88,8 @@ struct FontThumbnailView: View {
                 }
             }
             .padding(.horizontal, 4)
+            // Room for two lines, so every row of cards lines up.
+            .frame(minHeight: 34, alignment: .top)
         }
         .contentShape(Rectangle())
         .task(id: Key(token: font.token, installedVersion: font.installedVersion)) {
