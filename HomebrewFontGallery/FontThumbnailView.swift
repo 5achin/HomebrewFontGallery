@@ -7,7 +7,14 @@ struct FontThumbnailView: View {
     let isBusy: Bool
 
     @State private var thumbnail: NSImage?
-    @State private var isLoading = true
+    @State private var state = LoadState.waiting
+
+    private enum LoadState {
+        /// On screen, but not yet long enough to be worth loading.
+        case waiting
+        case loading
+        case loaded
+    }
 
     private static let sample = "Aa"
     private static let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -25,10 +32,10 @@ struct FontThumbnailView: View {
                         .renderingMode(.template)
                         .foregroundStyle(.primary)
                         .accessibilityHidden(true)
-                } else if isLoading {
+                } else if state == .loading {
                     ProgressView()
                         .controlSize(.small)
-                } else {
+                } else if state == .loaded {
                     Image(systemName: "eye.slash")
                         .font(.system(size: Self.side * 0.18))
                         .foregroundStyle(.tertiary)
@@ -96,10 +103,23 @@ struct FontThumbnailView: View {
         }
         .contentShape(Rectangle())
         .task(id: Key(token: font.token, installedVersion: font.installedVersion)) {
+            // A picture already in memory shows at once.
+            if let cached = FontThumbnails.cachedThumbnail(for: font) {
+                thumbnail = cached
+                state = .loaded
+                return
+            }
+            thumbnail = nil
+            state = .waiting
+            // Wait a moment before reading or downloading anything. A card that scrolls
+            // straight past is gone by then, and this task with it, so it loads nothing.
+            try? await Task.sleep(for: .milliseconds(120))
+            guard !Task.isCancelled else { return }
+            state = .loading
             let loaded = await FontThumbnails.shared.thumbnail(for: font)
             guard !Task.isCancelled else { return }
             thumbnail = loaded
-            isLoading = false
+            state = .loaded
         }
     }
 }

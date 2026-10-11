@@ -91,18 +91,30 @@ actor FontThumbnails {
         return try? Data(contentsOf: bundledDirectory.appendingPathComponent("\(font.token).png"))
     }
 
-    private let images: NSCache<NSString, NSImage> = {
+    /// The pictures read so far, most recent kept. NSCache is safe to use from any thread,
+    /// so a card can check it without waiting.
+    private static let images: NSCache<NSString, NSImage> = {
         let cache = NSCache<NSString, NSImage>()
-        cache.countLimit = 500
+        cache.countLimit = 300
         return cache
     }()
+
+    private static func name(for font: FontCask) -> String {
+        "\(font.token)-\(FontPreview.cacheKey(for: font))\(suffix)"
+    }
+
+    /// The font's thumbnail if it is already in memory, without reading or drawing anything.
+    nonisolated static func cachedThumbnail(for font: FontCask) -> NSImage? {
+        images.object(forKey: name(for: font) as NSString)
+    }
     /// Fonts with no file to show, or whose file couldn't be fetched or read, since the app opened.
     private var unavailable = Set<String>()
     private let downloads = Limiter(limit: 6)
 
     /// The font's thumbnail, or nil when the font can only be seen after installing it.
     func thumbnail(for font: FontCask) async -> NSImage? {
-        let name = "\(font.token)-\(FontPreview.cacheKey(for: font))\(FontThumbnails.suffix)"
+        let name = FontThumbnails.name(for: font)
+        let images = FontThumbnails.images
         if let image = images.object(forKey: name as NSString) {
             return image
         }
