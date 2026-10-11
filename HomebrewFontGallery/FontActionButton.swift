@@ -13,8 +13,6 @@ struct FontActionButton: View {
     /// covers all of the button and not just its title.
     var width: CGFloat?
 
-    @State private var isHovered = false
-
     var body: some View {
         let activity = model.activity
         let action = model.selectionAction
@@ -49,23 +47,12 @@ struct FontActionButton: View {
         .tint(removes ? .red : .green)
         .animation(.easeInOut(duration: 0.6), value: removes)
         .keyboardShortcut(removes || activity != nil ? nil : .defaultAction)
-        // A wash of white under the pointer, so the button lightens instead of darkening.
-        .overlay {
-            Capsule()
-                .fill(.white.opacity(isHovered && !isDisabled(activity: activity, action: action) ? 0.25 : 0))
-                .allowsHitTesting(false)
-        }
-        .onHover { isHovered = $0 }
-        .disabled(isDisabled(activity: activity, action: action))
+        .disabled(activity?.isCancelling ?? (action?.fonts.isEmpty ?? true))
         .help(help(activity: activity, action: action))
     }
 
     /// The room the button's own shape takes up on either side of its label.
     private static let padding: CGFloat = 16
-
-    private func isDisabled(activity: GalleryModel.Activity?, action: GalleryModel.SelectionAction?) -> Bool {
-        activity?.isCancelling ?? (action?.fonts.isEmpty ?? true)
-    }
 
     private func title(activity: GalleryModel.Activity?, action: GalleryModel.SelectionAction?) -> String {
         guard let activity else { return action?.title ?? "Install" }
