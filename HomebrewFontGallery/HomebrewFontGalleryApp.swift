@@ -28,6 +28,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ThumbnailExport.run(to: directory)
             return
         }
+        if let file = WidgetFontExport.file {
+            WidgetFontExport.run(to: file)
+            return
+        }
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"

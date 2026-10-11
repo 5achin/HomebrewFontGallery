@@ -50,6 +50,17 @@ You only need to do this once.
 6. **Do several at once.** Command-click or Shift-click to select more fonts. The button becomes **Install 3 Fonts**, say, and Homebrew installs them one after another. When every selected font is already installed, it becomes **Uninstall** for all of them.
 7. **Hide the details.** Click the button at the right of the toolbar to hide the details pane. Install and Uninstall move to the toolbar, and the pane stays hidden until you show it again, with the same button or by double-clicking a font.
 
+## The widget
+
+The app comes with a **Font Gallery** widget that shows a new set of Homebrew’s fonts every day. Open the app once, then right-click the desktop, choose **Edit Widgets…** and find **Homebrew Fonts Gallery** in the list.
+
+- **Small** shows “Aa”.
+- **Medium** shows “The quick brown fox jumps over the lazy dog.”
+- **Large** shows a paragraph of Lorem ipsum.
+- **Extra Large** shows a page with a heading, a paragraph, a list and some code, each in a different font.
+
+The arrows in the corner step back and forward through the day’s fonts, and each size keeps its own place. The widget downloads the day’s fonts the first time it is drawn and keeps them until the next day. It only reads them to draw the samples: nothing is installed.
+
 ## Troubleshooting
 
 **The app says Homebrew isn’t installed.**
@@ -60,6 +71,9 @@ See [The first time you open it](#the-first-time-you-open-it).
 
 **An install or uninstall failed.**
 Choose **Help › Show Logs in Finder**. The log, `~/Library/Logs/HomebrewFontGallery/HomebrewFontGallery.log`, records every `brew` command the app ran, its exit status and its error output. Running the same command in Terminal usually shows the cause.
+
+**The widget says “No Fonts Yet”.**
+It couldn’t download the day’s fonts, most likely because the Mac was offline. It tries again every 15 minutes.
 
 **A font I installed doesn’t appear in another app.**
 Quit and reopen that app. Most apps only read the list of fonts when they start.
@@ -84,6 +98,7 @@ Every push to `main` runs the tests, builds the app with GitHub Actions and publ
 
 - Thumbnails for about 2,000 fonts ship inside the app, in `HomebrewFontGallery/Thumbnails.bundle`, so the grid fills in without downloading anything. `scripts/update-thumbnails.sh` redraws them from the fonts Homebrew offers today.
 - A font Homebrew has added since then gets its thumbnail drawn on your Mac: the app downloads the font file, saves a small picture in `~/Library/Caches/com.sachinkharady.HomebrewFontGallery/Thumbnails` and deletes the download. The details pane downloads the selected font again and keeps only that one.
+- The widget is an extension inside the app, in `HomebrewFontGalleryWidget`. It chooses the day’s fonts from a list that ships with it, `WidgetFonts.json`, which `scripts/update-widget-fonts.sh` rewrites from the fonts Homebrew offers. The widget fetches the font files itself and keeps them in its own cache, because an app without a signing team can’t share a folder with its widget.
 
 Font casks install into your own `~/Library/Fonts`, so the app never asks for an administrator password.
 

@@ -61,6 +61,28 @@ directly: Homebrew owns every install and uninstall.
   pictures. Do it after changing how a thumbnail is drawn or its size, and now
   and then to pick up fonts Homebrew has added.
 
+## Widget
+
+- `HomebrewFontGalleryWidget` is a WidgetKit extension embedded in the app: one
+  widget, "Font Gallery", in four sizes. It is sandboxed, as macOS requires of
+  a widget, with outgoing network access and nothing else.
+- App Groups don't work here. With "Sign to Run Locally" macOS creates the group
+  folder but refuses the widget access to it, so the app can't hand the widget
+  files. Don't add an App Group or a sandbox exception; it needs a signing team.
+- So the widget looks after itself. The fonts it may choose from ship inside it
+  as `HomebrewFontGalleryWidget/WidgetFonts.json`. Run
+  `scripts/update-widget-fonts.sh` to rewrite that from Homebrew, then commit it.
+- `Shared/DailyFonts.swift` belongs to both the app and the widget, so the unit
+  tests can reach it. It picks the day's fonts from the date alone, so every
+  redraw of the day shows the same set.
+- `DailyFontCache` downloads the day's fonts into the widget's own caches folder
+  on the first drawing of the day and removes the day before's. The back and
+  forward buttons are `RotateFontIntent`, which counts presses for each size.
+- To see the widget without placing it on the desktop, build, open the app once,
+  then open `/System/Library/CoreServices/WidgetKit Simulator.app` and choose
+  Homebrew Fonts Gallery. It draws every size through the real widget pipeline.
+  Its buttons don't respond there: test those on a widget placed on the desktop.
+
 ## Running brew
 
 - `BrewService` is the only type that runs external commands. It launches `brew`
