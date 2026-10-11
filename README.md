@@ -76,7 +76,7 @@ Every push to `main` runs the tests, builds the app with GitHub Actions and publ
 
 ## How it's put together
 
-- **SwiftUI** for the whole interface.
+- **SwiftUI** for the interface, except the grid of fonts, which is AppKit's collection view. A SwiftUI grid of 2,583 cards was too slow to lay out whenever the window or the details pane changed size.
 - **`BrewService`** is the only place that runs external commands. It launches `brew` directly with `Process`, with no shell or wrapper script, and parses its JSON output into model types. The parsing is covered by unit tests.
 - Every command is logged to `~/Library/Logs/HomebrewFontGallery/HomebrewFontGallery.log`.
 

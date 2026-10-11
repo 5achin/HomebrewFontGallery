@@ -38,6 +38,20 @@ directly: Homebrew owns every install and uninstall.
   two or three layers on a gradient. No baked-in glass, shadow or mask, and
   nothing 3D or illustrative. Show it at the top of the README.
 
+## Performance
+
+- The grid is an `NSCollectionView` (`FontCollection.swift`), not a SwiftUI
+  `LazyVGrid`. Profiling showed the lazy grid walking its list from the first
+  font to the visible ones on every layout pass, about 100 ms a time. Don't
+  move it back to SwiftUI.
+- The grid watches `GalleryModel` itself with `withObservationTracking`, so it
+  doesn't depend on SwiftUI calling `updateNSView`.
+- The details pane shows and hides without animation, and the window is resized
+  in the same turn (`ContentView.resizeWindow`). Sliding the pane re-laid out
+  the window on every frame.
+- To profile, run `sample "Homebrew Fonts Gallery" 5 1 -file out.txt` while
+  resizing the window or toggling the pane, and read the main thread's tree.
+
 ## Thumbnails
 
 - The grid's thumbnails ship inside the app, in `HomebrewFontGallery/Thumbnails.bundle`,
