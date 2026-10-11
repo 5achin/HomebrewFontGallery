@@ -25,8 +25,8 @@ struct ContentView: View {
                     FontDetailView(font: font, activity: model.activity, status: model.status)
                         // A set width, so the toolbar can leave exactly that much room above it.
                         .inspectorColumnWidth(Self.detailsWidth)
-                        // A stretch of toolbar as wide as the pane holds the font's action at the
-                        // pane's top right, and keeps the window's own buttons over the grid.
+                        // A stretch of toolbar as wide as the pane holds the font's action in the
+                        // middle, and keeps the window's own buttons over the grid.
                         .toolbar {
                             if showingDetails.wrappedValue {
                                 if #available(macOS 26.0, *) {
@@ -42,6 +42,16 @@ struct ContentView: View {
                                 ToolbarItem {
                                     primaryAction
                                         .frame(width: Self.actionWidth)
+                                }
+                                if #available(macOS 26.0, *) {
+                                    ToolbarItem {
+                                        paneToolbarGap
+                                    }
+                                    .sharedBackgroundVisibility(.hidden)
+                                } else {
+                                    ToolbarItem {
+                                        paneToolbarGap
+                                    }
                                 }
                             }
                         }
@@ -135,10 +145,10 @@ struct ContentView: View {
     /// The action is one width whatever its title, so the space beside it can be exact.
     private static let actionWidth: CGFloat = 112
 
-    /// Empty toolbar that fills the rest of the pane's width, to the left of the action.
+    /// Empty toolbar on each side of the action, which centres it over the pane.
     private var paneToolbarGap: some View {
         Color.clear
-            .frame(width: Self.detailsWidth - Self.actionWidth - 18, height: 28)
+            .frame(width: (Self.detailsWidth - Self.actionWidth - 26) / 2, height: 28)
             .fixedSize()
     }
 

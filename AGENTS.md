@@ -74,7 +74,7 @@ Guidelines: system controls, colours, fonts and spacing only, and no visible
   list. Sheets, settings and detail panes still follow it.
 - Sachin asked for these, as deliberate exceptions to the toolbar rules in
   `~/Developer/AGENTS.md`: Install is a green prominent button and Uninstall a
-  red one, at the top right of the details pane; the toolbar ends at the edge of
+  red one, centred above the details pane; the toolbar ends at the edge of
   the grid, with the pane full height beside it; the All, Installed and Not
   Installed filter is centred; the search field lives in the sidebar.
 - Search with `.searchable`. Filters for installed and not-installed fonts use a
