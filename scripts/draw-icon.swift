@@ -8,11 +8,11 @@ import CoreText
 import Foundation
 
 let canvas = 1024.0
-let tileSide = 296.0
-let gap = 32.0
-let radius = 68.0
+let tileSide = 428.0
+let gap = 40.0
+let radius = 130.0
 /// The most room a letter may take up inside its tile.
-let letterBox = 176.0
+let letterBox = 250.0
 let letterColour = "#6A5FD6"
 
 /// A letter and the font it is set in, for each tile, row by row.
