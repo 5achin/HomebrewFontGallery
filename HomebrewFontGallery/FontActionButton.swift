@@ -8,6 +8,10 @@ import SwiftUI
 struct FontActionButton: View {
     let model: GalleryModel
     let window: WindowState
+    /// Set above the details pane, where the button is one width whatever its title. The
+    /// width goes on the label, inside the button, so the highlight under the pointer
+    /// covers all of the button and not just its title.
+    var width: CGFloat?
 
     var body: some View {
         let activity = model.activity
@@ -36,6 +40,7 @@ struct FontActionButton: View {
                     Image(systemName: removes ? "trash" : "arrow.down.circle")
                 }
             }
+            .frame(width: width.map { $0 - Self.padding })
         }
         .labelStyle(.titleAndIcon)
         .buttonStyle(.borderedProminent)
@@ -45,6 +50,9 @@ struct FontActionButton: View {
         .disabled(activity?.isCancelling ?? (action?.fonts.isEmpty ?? true))
         .help(help(activity: activity, action: action))
     }
+
+    /// The room the button's own shape takes up on either side of its label.
+    private static let padding: CGFloat = 16
 
     private func title(activity: GalleryModel.Activity?, action: GalleryModel.SelectionAction?) -> String {
         guard let activity else { return action?.title ?? "Install" }

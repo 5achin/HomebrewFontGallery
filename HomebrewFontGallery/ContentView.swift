@@ -40,7 +40,7 @@ struct ContentView: View {
                                     }
                                 }
                                 ToolbarItem {
-                                    FontActionButton(model: model, window: window)
+                                    FontActionButton(model: model, window: window, width: Self.actionWidth)
                                         .frame(width: Self.actionWidth)
                                 }
                                 if #available(macOS 26.0, *) {
