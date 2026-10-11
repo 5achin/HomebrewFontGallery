@@ -10,6 +10,36 @@ struct ContentView: View {
     @AppStorage("selectedFont") private var lastSelection = ""
 
     var body: some View {
+        NavigationSplitView {
+            sidebar
+                .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 260)
+        } detail: {
+            gallery
+        }
+    }
+
+    // MARK: Sidebar
+
+    private var sidebar: some View {
+        List(selection: $model.category) {
+            Label("All Fonts", systemImage: "square.grid.2x2")
+                .badge(model.fonts.count)
+                .tag(FontCategory.ID?.none)
+            if !model.categories.isEmpty {
+                Section("Categories") {
+                    ForEach(model.categories) { category in
+                        Label(category.word, systemImage: "textformat")
+                            .badge(category.count)
+                            .tag(FontCategory.ID?.some(category.id))
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: Gallery
+
+    private var gallery: some View {
         content
             .inspector(isPresented: showingDetails) {
                 if let font = model.selectedFont {
@@ -167,6 +197,8 @@ struct ContentView: View {
                     }
                 }
             }
+            // A different category is a different set of fonts, so its grid starts again from the top.
+            .id(model.category ?? "")
             .focusable()
             .focusEffectDisabled()
             .onMoveCommand { direction in

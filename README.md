@@ -9,6 +9,7 @@ A native Mac app for browsing, previewing and installing the fonts Homebrew offe
 ## What it does
 
 - Shows every `font-*` cask Homebrew knows about as a grid of thumbnails, with search and filters for installed and not-installed fonts.
+- Groups fonts into categories in the sidebar, taken from the most common last words of their names (Sans, Mono, Script and so on).
 - Renders a live preview of each font with your own sample text, size and style.
 - Installs and uninstalls fonts with one click by running `brew install --cask` and `brew uninstall --cask`.
 - Shows cask details (version, homepage, description) from `brew info --json`.

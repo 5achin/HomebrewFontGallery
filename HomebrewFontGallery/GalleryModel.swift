@@ -60,7 +60,13 @@ final class GalleryModel {
     private(set) var activity: Activity?
     private(set) var status: Status?
 
+    /// The most common kinds of font, worked out from the fonts' names when the list loads.
+    private(set) var categories: [FontCategory] = []
+    static let categoryLimit = 8
+
     var selection: FontCask.ID?
+    /// The category chosen in the sidebar, or nil for all fonts.
+    var category: FontCategory.ID?
     var searchText = ""
     var filter = Filter.all
 
@@ -78,12 +84,14 @@ final class GalleryModel {
     var isBusy: Bool { activity != nil }
 
     var visibleFonts: [FontCask] {
-        GalleryModel.filter(fonts, by: filter, searchText: searchText)
+        GalleryModel.filter(fonts, by: filter, searchText: searchText, category: categories.first { $0.id == category })
     }
 
-    nonisolated static func filter(_ fonts: [FontCask], by filter: Filter, searchText: String) -> [FontCask] {
+    nonisolated static func filter(_ fonts: [FontCask], by filter: Filter, searchText: String,
+                                   category: FontCategory? = nil) -> [FontCask] {
         let query = searchText.trimmingCharacters(in: .whitespaces)
         return fonts.filter { font in
+            if let category, !category.contains(font) { return false }
             switch filter {
             case .all: break
             case .installed: if !font.isInstalled { return false }
@@ -104,6 +112,7 @@ final class GalleryModel {
             fonts = all
                 .filter { $0.isInstallable || $0.isInstalled }
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            categories = FontCategory.top(GalleryModel.categoryLimit, in: fonts)
             loadState = .loaded
         } catch BrewError.notInstalled {
             loadState = .homebrewMissing
