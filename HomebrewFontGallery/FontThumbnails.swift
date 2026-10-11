@@ -7,11 +7,11 @@ import UniformTypeIdentifiers
 enum FontThumbnailRenderer {
     static let sample = "Aa"
     /// The picture's size in points. It fills the upper part of a card in the grid.
-    static let size = CGSize(width: 152, height: 144)
-    static let fontSize: CGFloat = 65
+    static let size = CGSize(width: 98, height: 93)
+    static let fontSize: CGFloat = 44
     /// Pixels per point, enough for a Retina display.
     static let scale: CGFloat = 2
-    private static let margin: CGFloat = 8
+    private static let margin: CGFloat = 6
 
     /// A PNG of the sample in black on a clear background, so it can be tinted for light or dark mode.
     static func png(for face: FontFace) -> Data? {
@@ -69,6 +69,18 @@ actor FontThumbnails {
         .appendingPathComponent(Bundle.main.bundleIdentifier ?? "HomebrewFontGallery")
         .appendingPathComponent("Thumbnails")
 
+    /// Ends every saved thumbnail's name. It carries the picture's size, so pictures
+    /// drawn for a different size of card aren't used.
+    private static let suffix = "-\(Int(FontThumbnailRenderer.size.width))x\(Int(FontThumbnailRenderer.size.height)).png"
+
+    /// Deletes thumbnails saved by a version of the app that drew them at another size.
+    static func removeOutdated() {
+        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        for file in files where !file.lastPathComponent.hasSuffix(suffix) {
+            try? FileManager.default.removeItem(at: file)
+        }
+    }
+
     private let images: NSCache<NSString, NSImage> = {
         let cache = NSCache<NSString, NSImage>()
         cache.countLimit = 500
@@ -80,7 +92,7 @@ actor FontThumbnails {
 
     /// The font's thumbnail, or nil when the font can only be seen after installing it.
     func thumbnail(for font: FontCask) async -> NSImage? {
-        let name = "\(font.token)-\(FontPreview.cacheKey(for: font)).png"
+        let name = "\(font.token)-\(FontPreview.cacheKey(for: font))\(FontThumbnails.suffix)"
         if let image = images.object(forKey: name as NSString) {
             return image
         }

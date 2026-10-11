@@ -10,7 +10,7 @@ struct FontThumbnailView: View {
     @State private var isLoading = true
 
     private static let sample = "Aa"
-    private static let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+    private static let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
 
     /// A white card with the sample in the middle and the number of styles along the bottom.
     private var card: some View {
@@ -37,7 +37,7 @@ struct FontThumbnailView: View {
 
             if let styleCount {
                 Text(styleCount)
-                    .font(.callout)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .frame(width: side, height: side * 0.2, alignment: .top)
@@ -70,12 +70,13 @@ struct FontThumbnailView: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             card
                 .aspectRatio(1, contentMode: .fit)
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(font.name)
+                    .font(.callout)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 if isBusy {
@@ -89,7 +90,7 @@ struct FontThumbnailView: View {
             }
             .padding(.horizontal, 4)
             // Room for two lines, so every row of cards lines up.
-            .frame(minHeight: 34, alignment: .top)
+            .frame(minHeight: 32, alignment: .top)
         }
         .contentShape(Rectangle())
         .task(id: Key(token: font.token, installedVersion: font.installedVersion)) {

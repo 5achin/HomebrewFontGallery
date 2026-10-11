@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let build = info?["CFBundleVersion"] as? String ?? "?"
         if !AppDelegate.isRunningTests {
             FontPreview.removeDownloads()
+            FontThumbnails.removeOutdated()
         }
         RunLog.write("=== Homebrew Font Gallery \(version) (\(build)) launched from \(Bundle.main.bundlePath), macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
     }

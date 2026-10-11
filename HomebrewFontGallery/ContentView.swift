@@ -159,10 +159,10 @@ struct ContentView: View {
 
     // MARK: Grid
 
-    /// Every card is this wide, whatever the window's size. A wider window fits more cards
-    /// across, and the rest reflow: three beside the details pane in a window of the default size.
-    private static let cardWidth: CGFloat = 180
-    private static let cardSpacing: CGFloat = 24
+    /// Every card is this wide, the size of Font Book's, whatever the window's size.
+    /// A wider window fits more cards across, and the rest reflow.
+    private static let cardWidth: CGFloat = 116
+    private static let cardSpacing: CGFloat = 20
 
     /// How many cards an adaptive grid fits across the given width.
     static func columnCount(forWidth width: CGFloat) -> Int {
@@ -173,7 +173,7 @@ struct ContentView: View {
         let fonts = model.visibleFonts
         return ScrollViewReader { proxy in
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.cardWidth, maximum: Self.cardWidth), spacing: Self.cardSpacing)], spacing: 20) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.cardWidth, maximum: Self.cardWidth), spacing: Self.cardSpacing)], spacing: 12) {
                     ForEach(fonts) { font in
                         Button {
                             model.selection = font.token
