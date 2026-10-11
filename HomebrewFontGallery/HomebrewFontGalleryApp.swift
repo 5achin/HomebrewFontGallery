@@ -8,7 +8,7 @@ struct HomebrewFontGalleryApp: App {
         Window("Homebrew Font Gallery", id: "main") {
             ContentView()
         }
-        .defaultSize(width: 900, height: 600)
+        .defaultSize(width: 1100, height: 720)
         .commands {
             CommandGroup(after: .help) {
                 Button("Show Logs in Finder") {

@@ -4,110 +4,86 @@ struct ContentView: View {
     @State private var model = GalleryModel()
     @State private var confirmingUninstall: FontCask?
     @State private var confirmingCancel = false
+    @State private var detailsHidden = false
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
 
     var body: some View {
-        NavigationSplitView {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 400)
-        } detail: {
-            detail
-        }
-        .navigationTitle("Homebrew Font Gallery")
-        .navigationSubtitle(subtitle)
-        .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
-        .toolbar {
-            ToolbarItem {
-                Picker("Show", selection: $model.filter) {
-                    ForEach(GalleryModel.Filter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
+        content
+            .inspector(isPresented: showingDetails) {
+                if let font = model.selectedFont {
+                    FontDetailView(font: font, activity: model.activity, status: model.status)
+                        .inspectorColumnWidth(min: 340, ideal: 400, max: 560)
+                }
+            }
+            .navigationTitle("Homebrew Font Gallery")
+            .navigationSubtitle(subtitle)
+            .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search Fonts")
+            .toolbar {
+                ToolbarItem {
+                    Picker("Show", selection: $model.filter) {
+                        ForEach(GalleryModel.Filter.allCases) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
                     }
+                    .pickerStyle(.segmented)
+                    .help("Show all fonts, or only the ones that are installed or not installed.")
                 }
-                .pickerStyle(.segmented)
-                .help("Show all fonts, or only the ones that are installed or not installed.")
+                ToolbarItem(placement: .primaryAction) {
+                    primaryAction
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        detailsHidden.toggle()
+                    } label: {
+                        Label(detailsHidden ? "Show Details" : "Hide Details", systemImage: "sidebar.trailing")
+                    }
+                    .disabled(model.selectedFont == nil)
+                    .help(detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
+                }
             }
-            ToolbarItem(placement: .primaryAction) {
-                primaryAction
+            .confirmationDialog(
+                "Uninstall “\(confirmingUninstall?.name ?? "")”?",
+                isPresented: Binding(get: { confirmingUninstall != nil }, set: { if !$0 { confirmingUninstall = nil } }),
+                presenting: confirmingUninstall
+            ) { font in
+                Button("Uninstall", role: .destructive) {
+                    model.uninstall(font)
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { font in
+                Text("Homebrew will remove \(Self.fileCount(font)) from your Fonts folder. Documents that use the font will show a different one until you install it again.")
             }
-        }
-        .confirmationDialog(
-            "Uninstall “\(confirmingUninstall?.name ?? "")”?",
-            isPresented: Binding(get: { confirmingUninstall != nil }, set: { if !$0 { confirmingUninstall = nil } }),
-            presenting: confirmingUninstall
-        ) { font in
-            Button("Uninstall", role: .destructive) {
-                model.uninstall(font)
+            .confirmationDialog(cancelTitle, isPresented: $confirmingCancel) {
+                Button(stopLabel, role: .destructive) {
+                    model.cancelActivity()
+                }
+                Button(keepLabel, role: .cancel) {}
+            } message: {
+                Text(cancelMessage)
             }
-            Button("Cancel", role: .cancel) {}
-        } message: { font in
-            Text("Homebrew will remove \(Self.fileCount(font)) from your Fonts folder. Documents that use the font will show a different one until you install it again.")
-        }
-        .confirmationDialog(cancelTitle, isPresented: $confirmingCancel) {
-            Button(stopLabel, role: .destructive) {
-                model.cancelActivity()
+            .frame(minWidth: 760, minHeight: 460)
+            .task {
+                guard !AppDelegate.isRunningTests else { return }
+                await model.load()
+                if model.selection == nil, !lastSelection.isEmpty {
+                    model.selection = lastSelection
+                }
             }
-            Button(keepLabel, role: .cancel) {}
-        } message: {
-            Text(cancelMessage)
-        }
-        .frame(minWidth: 700, minHeight: 420)
-        .task {
-            guard !AppDelegate.isRunningTests else { return }
-            await model.load()
-            if model.selection == nil, !lastSelection.isEmpty {
-                model.selection = lastSelection
+            .onChange(of: model.selection) { _, selection in
+                if let selection {
+                    lastSelection = selection
+                    detailsHidden = false
+                }
             }
-        }
-        .onChange(of: model.selection) { _, selection in
-            if let selection {
-                lastSelection = selection
-            }
-        }
     }
 
-    // MARK: Sidebar
-
-    private var sidebar: some View {
-        let fonts = model.visibleFonts
-        return ScrollViewReader { proxy in
-            fontList(fonts)
-                .onChange(of: model.loadState) { _, state in
-                    // Bring the restored selection into view once the list has its rows.
-                    guard state == .loaded, !lastSelection.isEmpty else { return }
-                    Task { proxy.scrollTo(lastSelection, anchor: .center) }
-                }
-        }
-    }
-
-    private func fontList(_ fonts: [FontCask]) -> some View {
-        List(fonts, selection: $model.selection) { font in
-            HStack {
-                Text(font.name)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Spacer()
-                if model.activity?.token == font.token {
-                    ProgressView()
-                        .controlSize(.small)
-                } else if font.isInstalled {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .accessibilityLabel("Installed")
-                        .help("Installed")
-                }
-            }
-        }
-        .overlay {
-            if model.loadState == .loaded, fonts.isEmpty {
-                if model.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                    ContentUnavailableView("No Fonts", systemImage: "textformat",
-                                           description: Text(model.filter == .installed ? "Fonts you install appear here." : "There are no fonts to show."))
-                } else {
-                    ContentUnavailableView.search(text: model.searchText)
-                }
-            }
-        }
+    /// The details pane slides out whenever a font is selected, unless it has been hidden.
+    private var showingDetails: Binding<Bool> {
+        Binding(
+            get: { model.selectedFont != nil && !detailsHidden },
+            set: { detailsHidden = !$0 }
+        )
     }
 
     private var subtitle: String {
@@ -116,13 +92,14 @@ struct ContentView: View {
         return count == 1 ? "1 font" : "\(count.formatted()) fonts"
     }
 
-    // MARK: Detail
+    // MARK: Content
 
     @ViewBuilder
-    private var detail: some View {
+    private var content: some View {
         switch model.loadState {
         case .loading:
             ProgressView("Loading Fonts…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .homebrewMissing:
             ContentUnavailableView {
                 Label("Homebrew Isn’t Installed", systemImage: "shippingbox")
@@ -145,13 +122,80 @@ struct ContentView: View {
                 }
             }
         case .loaded:
-            if let font = model.selectedFont {
-                FontDetailView(font: font, activity: model.activity, status: model.status)
-            } else {
-                ContentUnavailableView("No Font Selected", systemImage: "textformat",
-                                       description: Text("Select a font to preview it."))
+            grid
+        }
+    }
+
+    // MARK: Grid
+
+    private static let columnCount = 3
+
+    private var grid: some View {
+        let fonts = model.visibleFonts
+        return ScrollViewReader { proxy in
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: Self.columnCount), spacing: 16) {
+                    ForEach(fonts) { font in
+                        Button {
+                            model.selection = font.token
+                            detailsHidden = false
+                        } label: {
+                            FontThumbnailView(font: font, isSelected: model.selection == font.token,
+                                              isBusy: model.activity?.token == font.token)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(font.isInstalled ? "\(font.name), installed" : font.name)
+                        .accessibilityAddTraits(model.selection == font.token ? .isSelected : [])
+                        .id(font.token)
+                    }
+                }
+                .padding()
+            }
+            .focusable()
+            .focusEffectDisabled()
+            .onMoveCommand { direction in
+                moveSelection(direction, in: fonts, proxy: proxy)
+            }
+            .onExitCommand {
+                model.selection = nil
+            }
+            .onAppear {
+                // Bring the restored selection into view once the grid has its thumbnails.
+                guard let selection = model.selection ?? (lastSelection.isEmpty ? nil : lastSelection) else { return }
+                Task { proxy.scrollTo(selection, anchor: .center) }
+            }
+            .overlay {
+                if fonts.isEmpty {
+                    if model.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                        ContentUnavailableView("No Fonts", systemImage: "textformat",
+                                               description: Text(model.filter == .installed ? "Fonts you install appear here." : "There are no fonts to show."))
+                    } else {
+                        ContentUnavailableView.search(text: model.searchText)
+                    }
+                }
             }
         }
+    }
+
+    /// Moves the selection with the arrow keys, a column or a row at a time.
+    private func moveSelection(_ direction: MoveCommandDirection, in fonts: [FontCask], proxy: ScrollViewProxy) {
+        guard !fonts.isEmpty else { return }
+        guard let current = fonts.firstIndex(where: { $0.token == model.selection }) else {
+            model.selection = fonts[0].token
+            return
+        }
+        let step: Int
+        switch direction {
+        case .left: step = -1
+        case .right: step = 1
+        case .up: step = -Self.columnCount
+        case .down: step = Self.columnCount
+        @unknown default: return
+        }
+        let target = current + step
+        guard fonts.indices.contains(target) else { return }
+        model.selection = fonts[target].token
+        proxy.scrollTo(fonts[target].token)
     }
 
     // MARK: Toolbar

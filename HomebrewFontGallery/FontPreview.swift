@@ -74,7 +74,10 @@ enum FontPreview {
         do {
             (downloaded, response) = try await URLSession.shared.download(from: source)
         } catch {
-            RunLog.write("Preview download failed for \(font.token): \(error.localizedDescription)")
+            // A thumbnail that scrolls out of view cancels its download, which isn't worth a log line.
+            if !Task.isCancelled {
+                RunLog.write("Preview download failed for \(font.token): \(error.localizedDescription)")
+            }
             throw FontPreviewError.downloadFailed
         }
         defer { try? FileManager.default.removeItem(at: downloaded) }
