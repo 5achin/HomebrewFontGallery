@@ -1,0 +1,26 @@
+{
+  "url": "https://api.github.com/repos/5achin/HomebrewFontGallery/releases/409992153",
+  "html_url": "https://github.com/5achin/HomebrewFontGallery/releases/tag/v1.0-build.36",
+  "id": 409992153,
+  "tag_name": "v1.0-build.36",
+  "target_commitish": "a0402a3df4a64268e3cdc5c3e1a4f8b5998b9377",
+  "name": "Homebrew Fonts Gallery 1.0 (build 36)",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2026-10-11T23:41:22Z",
+  "published_at": "2026-10-11T23:44:24Z",
+  "body": "**Full Changelog**: https://github.com/5achin/HomebrewFontGallery/compare/v1.0-build.35...v1.0-build.36",
+  "assets": [
+    {
+      "url": "https://api.github.com/repos/5achin/HomebrewFontGallery/releases/assets/632108724",
+      "id": 632108724,
+      "name": "HomebrewFontGallery-v1.0-build.36.zip",
+      "content_type": "application/zip",
+      "state": "uploaded",
+      "size": 9425165,
+      "digest": "sha256:7893f53845807dbbb1fdd6ed9d64e2b32dbe62adfbe8aec7dbacdb707f367fe1",
+      "download_count": 0,
+      "browser_download_url": "https://github.com/5achin/HomebrewFontGallery/releases/download/v1.0-build.36/HomebrewFontGallery-v1.0-build.36.zip"
+    }
+  ]
+}

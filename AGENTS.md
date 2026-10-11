@@ -83,9 +83,36 @@ directly: Homebrew owns every install and uninstall.
   Homebrew Fonts Gallery. It draws every size through the real widget pipeline.
   Its buttons don't respond there: test those on a widget placed on the desktop.
 
+## Updates
+
+- The app updates itself from this repository's GitHub releases (`UpdateService`,
+  `UpdateModel`, `UpdateSheet`). It asks GitHub for the latest release when it
+  opens and once a day, and from **Check for Updates…** in the app menu.
+- The release workflow stamps each build with its run number (`BUILD_NUMBER` in
+  `scripts/build.sh`), which is also the number in the release tag,
+  `v1.0-build.N`. The updater offers a release whose number is higher than the
+  running app's. A build made on this Mac keeps build number 1, which the
+  updater takes for a local build: it never checks by itself, though Check for
+  Updates… still works. To try the updater, build with `BUILD_NUMBER=2` and
+  run a copy from outside `build/Release`.
+- Before replacing the app it checks the zip against the SHA-256 GitHub records
+  for the release asset, then that the unpacked app has this bundle identifier,
+  the promised build number and an intact signature. The app is ad-hoc signed,
+  so none of this proves who built it; that rests on GitHub's HTTPS. Sparkle
+  and notarization need a Developer ID, so don't add them.
+- It unpacks the zip with `/usr/bin/ditto`, the one command besides `brew` the
+  app runs, launched with `Process` and logged the same way. It swaps the app
+  bundle with `FileManager` and reopens it with `NSWorkspace`: no shell, no
+  helper script.
+- Downloads made by the app carry no quarantine flag, so Gatekeeper doesn't
+  stop the updated app. An app still running from the Downloads folder under
+  App Translocation can't be replaced; the updater says to move it first.
+- Parse GitHub's answer in `UpdateParsing`, pure functions with unit tests.
+
 ## Running brew
 
-- `BrewService` is the only type that runs external commands. It launches `brew`
+- `BrewService` is the only type that runs `brew`, and besides the updater's
+  `ditto` (see Updates) nothing else runs an external command. It launches `brew`
   directly with `Process`: no shell, no wrapper script, no AppleScript.
 - Font casks install into `~/Library/Fonts` and need no administrator rights. Never
   use `osascript ... with administrator privileges`.

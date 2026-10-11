@@ -4,6 +4,7 @@ struct ContentView: View {
     @State private var model = GalleryModel()
     /// What the window is showing, shared with the grid.
     @State private var window = WindowState()
+    private let updater = UpdateModel.shared
     /// False while the window is first opening, when the pane appears without resizing it.
     @State private var windowFollowsPane = false
     private static let detailsWidth: CGFloat = 400
@@ -81,6 +82,12 @@ struct ContentView: View {
         }
         .onChange(of: showingDetails.wrappedValue) { _, isShowing in
             resizeWindow(paneIsShowing: isShowing)
+        }
+        .sheet(item: Binding(get: { updater.phase.map(UpdatePresentation.init) }, set: { if $0 == nil { updater.dismiss() } })) { _ in
+            // The sheet stays up from one phase to the next, and reads the current one itself.
+            if let phase = updater.phase {
+                UpdateSheet(updater: updater, phase: phase, galleryIsBusy: model.isBusy)
+            }
         }
     }
 

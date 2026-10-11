@@ -6,6 +6,11 @@
 #   scripts/build.sh --zip    also write build/Release/HomebrewFontGallery.zip
 #   scripts/build.sh --open   reveal the built app in Finder
 #
+# Set BUILD_NUMBER to stamp the app with a build number, as the release workflow
+# does with its run number. The app's updater compares it with the newest release.
+# Without it the app keeps the project's build number, 1, which the updater takes
+# for a build made on this Mac and leaves alone.
+#
 # The app is ad-hoc signed (the project's default), so it runs on this Mac
 # but is not notarized.
 set -euo pipefail
@@ -45,7 +50,8 @@ xcodebuild \
   -configuration Release \
   -destination "generic/platform=macOS" \
   -derivedDataPath "$DERIVED_DATA" \
-  build
+  build \
+  ${BUILD_NUMBER:+"CURRENT_PROJECT_VERSION=$BUILD_NUMBER"}
 
 mkdir -p "$OUT_DIR"
 rm -rf "$APP"

@@ -44,6 +44,9 @@ jobs:
 
       - name: Test and build
         if: steps.project.outputs.exists == 'true'
+        # The build number is what the app's updater compares with the newest release.
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
         run: scripts/build.sh --test --zip
 
       - name: Upload build artifact

@@ -40,6 +40,10 @@ Homebrew Fonts Gallery is not signed with an Apple Developer ID, so macOS blocks
 
 You only need to do this once.
 
+### Updates
+
+The app looks for a newer version when you open it and once a day, and offers to install it. Click **Install and Relaunch** and it downloads the new version, checks it against the published release, replaces itself and reopens. To look yourself, choose **Homebrew Fonts Gallery › Check for Updates…**.
+
 ## How to use it
 
 1. **Open the app.** It loads every font Homebrew offers. This takes a few seconds the first time.
@@ -68,6 +72,9 @@ Install it from [brew.sh](https://brew.sh), then reopen the app. It looks for `b
 
 **macOS says the app can’t be opened.**
 See [The first time you open it](#the-first-time-you-open-it).
+
+**The app says to move it before it can update.**
+macOS runs an app opened straight from the Downloads folder from a read-only copy, which can’t be replaced. Quit the app, drag it into your Applications folder and open it from there.
 
 **An install or uninstall failed.**
 Choose **Help › Show Logs in Finder**. The log, `~/Library/Logs/HomebrewFontGallery/HomebrewFontGallery.log`, records every `brew` command the app ran, its exit status and its error output. Running the same command in Terminal usually shows the cause.

@@ -10,6 +10,9 @@ struct HomebrewFontGalleryApp: App {
         }
         .defaultSize(width: 1100, height: 720)
         .commands {
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesButton()
+            }
             CommandGroup(after: .help) {
                 Button("Show Logs in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([RunLog.fileURL])
@@ -40,6 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             FontThumbnails.removeOutdated()
         }
         RunLog.write("=== Homebrew Fonts Gallery \(version) (\(build)) launched from \(Bundle.main.bundlePath), macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
+        if !AppDelegate.isRunningTests {
+            UpdateModel.shared.startAutomaticChecks()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
