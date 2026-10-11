@@ -94,8 +94,12 @@ final class GalleryModel {
     /// The fonts the grid shows. It is worked out when what it depends on changes, and
     /// kept, because the window asks for it many times a second while it is resized.
     private(set) var visibleFonts: [FontCask] = []
+    /// Goes up each time `visibleFonts` is worked out again, so a view can tell that it
+    /// changed without comparing 2,583 fonts.
+    private(set) var visibleFontsVersion = 0
 
     private func updateVisibleFonts() {
+        visibleFontsVersion += 1
         visibleFonts = GalleryModel.filter(fonts, by: filter, searchText: searchText,
                                            category: categories.first { $0.id == category })
     }

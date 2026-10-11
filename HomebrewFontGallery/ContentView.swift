@@ -4,12 +4,8 @@ struct ContentView: View {
     @State private var model = GalleryModel()
     @State private var confirmingUninstall: FontCask?
     @State private var confirmingCancel = false
-    @State private var detailsHidden = false
-    /// How many cards fit across the grid, for the arrow keys. It is kept outside the
-    /// view's state so that resizing the window doesn't redraw the whole window.
-    @State private var gridLayout = GridLayout()
-    /// True when the grid is too narrow for the toolbar's filter tabs.
-    @State private var isCompact = false
+    /// What the window is showing, shared with the grid.
+    @State private var window = WindowState()
     /// False while the window is first opening, when the pane appears without resizing it.
     @State private var windowFollowsPane = false
     private static let detailsWidth: CGFloat = 400
@@ -63,6 +59,12 @@ struct ContentView: View {
                         }
                 }
             }
+            // The pane appears and goes at once, with the window resized in the same moment.
+            // Sliding it re-laid out the grid on every frame, which was choppy.
+            .transaction { transaction in
+                transaction.animation = nil
+                transaction.disablesAnimations = true
+            }
         }
         .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
         // On the window itself, so the fonts load once. On the grid, the load ran twice.
@@ -70,7 +72,9 @@ struct ContentView: View {
             guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
             await model.load()
             if model.selection == nil, !lastSelection.isEmpty {
-                model.selection = lastSelection
+                WindowState.withoutAnimation {
+                    model.selection = lastSelection
+                }
             }
             // The window opens at the size it was left, pane included, so only later
             // changes to the pane resize it.
@@ -110,7 +114,7 @@ struct ContentView: View {
             .toolbar {
                 // The filter is three tabs in the centre while there is room for them, and
                 // folds into a menu when the grid is too narrow.
-                if isCompact {
+                if window.isCompact {
                     ToolbarItem {
                         Menu {
                             Picker("Show", selection: $model.filter) {
@@ -137,12 +141,14 @@ struct ContentView: View {
                 }
                 ToolbarItem {
                     Button {
-                        detailsHidden.toggle()
+                        WindowState.withoutAnimation {
+                            window.detailsHidden.toggle()
+                        }
                     } label: {
-                        Label(detailsHidden ? "Show Details" : "Hide Details", systemImage: "sidebar.trailing")
+                        Label(window.detailsHidden ? "Show Details" : "Hide Details", systemImage: "sidebar.trailing")
                     }
                     .disabled(model.selectedFont == nil)
-                    .help(detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
+                    .help(window.detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
                 }
             }
             .confirmationDialog(
@@ -167,11 +173,11 @@ struct ContentView: View {
             }
             // The grid asks for one column at least. Beside the details pane the system
             // keeps it wider, at 340 pt, which is two columns.
-            .frame(minWidth: Self.cardWidth + 64, minHeight: 460)
+            .frame(minWidth: FontCollection.cardSide + 64, minHeight: 460)
             .onChange(of: model.selection) { _, selection in
                 if let selection {
                     lastSelection = selection
-                    detailsHidden = false
+                    window.detailsHidden = false
                 }
             }
     }
@@ -186,36 +192,33 @@ struct ContentView: View {
             .fixedSize()
     }
 
-    /// Widens the window by the pane's width as the pane slides out, and narrows it again as
+    /// Widens the window by the pane's width as the pane appears, and narrows it again as
     /// the pane goes, so the grid keeps its width and its cards stay where they are.
     private func resizeWindow(paneIsShowing: Bool) {
         guard windowFollowsPane,
               let window = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }),
-              !window.styleMask.contains(.fullScreen) else { return }
-        // Wait a moment, so the window's smallest size has caught up with the pane.
-        DispatchQueue.main.async {
-            var frame = window.frame
-            frame.size.width += paneIsShowing ? Self.detailsWidth : -Self.detailsWidth
-            frame.size.width = max(frame.size.width, window.minSize.width)
-            if let screen = window.screen?.visibleFrame {
-                // Stay on the screen: slide left if the right edge would go off it.
-                frame.size.width = min(frame.size.width, screen.width)
-                if frame.maxX > screen.maxX {
-                    frame.origin.x = max(screen.minX, screen.maxX - frame.width)
-                }
-            }
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.25
-                window.animator().setFrame(frame, display: true)
+              !window.styleMask.contains(.fullScreen),
+              // Hiding the pane must leave room for the sidebar and two columns of cards.
+              paneIsShowing || window.frame.width - Self.detailsWidth >= 500 else { return }
+        var frame = window.frame
+        frame.size.width += paneIsShowing ? Self.detailsWidth : -Self.detailsWidth
+        if let screen = window.screen?.visibleFrame {
+            // Stay on the screen: slide left if the right edge would go off it.
+            frame.size.width = min(frame.size.width, screen.width)
+            if frame.maxX > screen.maxX {
+                frame.origin.x = max(screen.minX, screen.maxX - frame.width)
             }
         }
+        // In the same turn as the pane, and without laying out yet, so the window is laid
+        // out once with both changes and the grid never sees a different width.
+        window.setFrame(frame, display: false)
     }
 
     /// The details pane slides out whenever a font is selected, unless it has been hidden.
     private var showingDetails: Binding<Bool> {
         Binding(
-            get: { model.selectedFont != nil && !detailsHidden },
-            set: { detailsHidden = !$0 }
+            get: { model.selectedFont != nil && !window.detailsHidden },
+            set: { window.detailsHidden = !$0 }
         )
     }
 
@@ -255,110 +258,8 @@ struct ContentView: View {
                 }
             }
         case .loaded:
-            grid
+            FontGrid(model: model, window: window)
         }
-    }
-
-    // MARK: Grid
-
-    /// Every card is this wide, the size of Font Book's, whatever the window's size.
-    /// A wider window fits more cards across, and the rest reflow.
-    private static let cardWidth = FontThumbnailView.side
-    private static let cardSpacing: CGFloat = 20
-    /// Below this width of grid, the title and the filter tabs no longer fit side by side.
-    private static let compactWidth: CGFloat = 620
-
-    /// How many cards an adaptive grid fits across the given width.
-    static func columnCount(forWidth width: CGFloat) -> Int {
-        max(1, Int((width + cardSpacing) / (cardWidth + cardSpacing)))
-    }
-
-    private var grid: some View {
-        let fonts = model.visibleFonts
-        return ScrollViewReader { proxy in
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.cardWidth, maximum: Self.cardWidth), spacing: Self.cardSpacing)], spacing: 12) {
-                    ForEach(fonts) { font in
-                        Button {
-                            model.selection = font.token
-                            detailsHidden = false
-                        } label: {
-                            FontThumbnailView(font: font, isSelected: model.selection == font.token,
-                                              isBusy: model.activity?.token == font.token)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(font.isInstalled ? "\(font.name), installed" : font.name)
-                        .accessibilityAddTraits(model.selection == font.token ? .isSelected : [])
-                    }
-                }
-                .padding(24)
-                .background {
-                    GeometryReader { geometry in
-                        Color.clear.onChange(of: geometry.size.width, initial: true) { _, width in
-                            gridLayout.columnCount = Self.columnCount(forWidth: width - 48)
-                            // This only changes as the width crosses one point, so it is cheap.
-                            let compact = width < Self.compactWidth
-                            if compact != isCompact {
-                                isCompact = compact
-                            }
-
-                        }
-                    }
-                }
-            }
-            // A different category is a different set of fonts, so its grid starts again from the top.
-            .id(model.category ?? "")
-            .focusable()
-            .focusEffectDisabled()
-            .onMoveCommand { direction in
-                moveSelection(direction, in: fonts, proxy: proxy)
-            }
-            .onExitCommand {
-                model.selection = nil
-            }
-            .onAppear {
-                // Bring the restored selection into view once the grid has its thumbnails.
-                guard let selection = model.selection ?? (lastSelection.isEmpty ? nil : lastSelection) else { return }
-                Task {
-                    // The grid only estimates where a far-off card is, so the first jump can land
-                    // short. A second one, once the cards near it exist, lands on it.
-                    proxy.scrollTo(selection, anchor: .center)
-                    try? await Task.sleep(for: .milliseconds(300))
-                    proxy.scrollTo(selection, anchor: .center)
-                }
-            }
-            .overlay {
-                if fonts.isEmpty {
-                    if model.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                        ContentUnavailableView("No Fonts", systemImage: "textformat",
-                                               description: Text(model.filter == .installed ? "Fonts you install appear here." : "There are no fonts to show."))
-                    } else {
-                        ContentUnavailableView.search(text: model.searchText)
-                    }
-                }
-            }
-        }
-    }
-
-    /// Moves the selection with the arrow keys, a column or a row at a time.
-    private func moveSelection(_ direction: MoveCommandDirection, in fonts: [FontCask], proxy: ScrollViewProxy) {
-        guard !fonts.isEmpty else { return }
-        guard let current = fonts.firstIndex(where: { $0.token == model.selection }) else {
-            model.selection = fonts[0].token
-            return
-        }
-        let step: Int
-        switch direction {
-        case .left: step = -1
-        case .right: step = 1
-        case .up: step = -gridLayout.columnCount
-        case .down: step = gridLayout.columnCount
-        @unknown default: return
-        }
-        let target = current + step
-        guard fonts.indices.contains(target) else { return }
-        model.selection = fonts[target].token
-        proxy.scrollTo(fonts[target].token)
     }
 
     // MARK: Toolbar
@@ -427,9 +328,4 @@ struct ContentView: View {
 
     private var stopLabel: String { isInstalling ? "Stop Installing" : "Stop Uninstalling" }
     private var keepLabel: String { isInstalling ? "Keep Installing" : "Keep Uninstalling" }
-}
-
-/// Plain storage for the grid's column count. Changing it redraws nothing.
-private final class GridLayout {
-    var columnCount = 3
 }
