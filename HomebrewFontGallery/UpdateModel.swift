@@ -75,6 +75,7 @@ final class UpdateModel {
 
     func install(_ update: AppUpdate) {
         guard phase == .available(update) else { return }
+        RunLog.write("Update: Install and Relaunch chosen for build \(update.build)")
         phase = .downloading(update, received: 0)
         task = Task {
             do {
@@ -95,6 +96,11 @@ final class UpdateModel {
             }
             phase = .installing(update)
             if await service.openInstalledApp() {
+                // An app doesn't quit while one of its windows has a sheet, so the sheet goes first.
+                phase = nil
+                for window in NSApp.windows {
+                    window.attachedSheet.map(window.endSheet)
+                }
                 NSApp.terminate(nil)
             } else {
                 phase = .failed(
