@@ -49,13 +49,24 @@ enum Samples {
         """
     static let list = ["Headings draw the eye.", "Paragraphs carry the story.", "Code keeps every column aligned."]
     static let code = """
+        import Typography
+
+        // One font in today's gallery.
         struct Sample {
             let name: String
             var size = 12.0
+            var isMonospaced = false
         }
 
-        for sample in gallery {
-            print(sample.name)
+        func label(_ sample: Sample) -> String {
+            if sample.isMonospaced {
+                return "\\(sample.name), code"
+            }
+            return "\\(sample.name), text"
+        }
+
+        for sample in gallery.prefix(8) {
+            print(label(sample))
         }
         """
 }
@@ -151,8 +162,8 @@ private struct DocumentSample: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-                Text(Samples.code)
-                    .font(code?.font(13) ?? .system(size: 13, design: .monospaced))
+                HighlightedCode(code: Samples.code)
+                    .font(code?.font(12) ?? .system(size: 12, design: .monospaced))
                     .minimumScaleFactor(0.7)
                     .padding(12)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -169,6 +180,28 @@ private struct DocumentSample: View {
             parts.append("Code: \(code.name)")
         }
         return parts.joined(separator: "  ·  ")
+    }
+}
+
+/// Code with its keywords, types, strings, numbers and comments in the system's colours.
+private struct HighlightedCode: View {
+    let code: String
+
+    var body: some View {
+        CodeTokens.tokens(in: code).reduce(Text("")) { text, token in
+            text + Text(token.text).foregroundStyle(color(for: token.kind))
+        }
+    }
+
+    private func color(for kind: CodeTokens.Kind) -> Color {
+        switch kind {
+        case .plain: .primary
+        case .keyword: .pink
+        case .type: .teal
+        case .string: .red
+        case .number: .purple
+        case .comment: .secondary
+        }
     }
 }
 
