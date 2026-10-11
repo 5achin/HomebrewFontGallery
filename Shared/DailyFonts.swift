@@ -10,13 +10,33 @@ struct WidgetFont: Codable, Hashable, Identifiable {
     let url: URL
     /// The download's SHA-256, or nil when Homebrew doesn't check one.
     let sha256: String?
+    /// Google Fonts' category for the font: "Sans Serif", "Serif", "Display", "Handwriting"
+    /// or "Monospace". Nil for a font Google Fonts doesn't carry.
+    var category: String?
 
     var id: String { token }
 
-    /// True when the name says the font is meant for code.
+    /// True when the category or the name says the font is meant for code.
     var isMonospaced: Bool {
+        if let category { return category == "Monospace" }
         let words = token.lowercased()
         return ["mono", "code", "courier", "consol", "typewriter"].contains { words.contains($0) }
+    }
+
+    /// The kind of letters the font has, from its category, or failing that from its name.
+    /// Small caps and display cuts are for headings, whatever family they belong to.
+    var kind: FontKind {
+        let words = Set(name.lowercased().split(separator: " ").map(String.init))
+        if !words.isDisjoint(with: ["sc", "display", "caps", "inline", "stencil"]) { return .expressive }
+        switch category {
+        case "Sans Serif": return .sans
+        case "Serif": return .serif
+        case .some: return .expressive
+        case nil:
+            if words.contains("sans") { return .sans }
+            if words.contains("serif") || words.contains("slab") { return .serif }
+            return .expressive
+        }
     }
 
     static func decodeCatalogue(_ data: Data) throws -> [WidgetFont] {
@@ -35,20 +55,26 @@ struct WidgetFont: Codable, Hashable, Identifiable {
 struct DailyFonts: Equatable {
     /// The day as "2026-10-11", in the Mac's own time zone.
     let day: String
-    /// Fonts for headings and running text.
+    /// Plain sans serif and serif fonts, which can set a paragraph as well as a heading.
     let text: [WidgetFont]
+    /// Display and handwriting fonts, for headings.
+    let expressive: [WidgetFont]
     /// Monospaced fonts, for the code in the extra large widget.
     let code: [WidgetFont]
 
     /// More fonts are picked than are shown, because some will fail to download or
-    /// turn out to have no Latin letters.
-    static func pick(from catalogue: [WidgetFont], day: String, textCount: Int = 16, codeCount: Int = 8) -> DailyFonts {
+    /// turn out to have no Latin letters. Each kind is picked separately, so every day
+    /// has plain fonts to pair the expressive ones with.
+    static func pick(from catalogue: [WidgetFont], day: String, textCount: Int = 14, expressiveCount: Int = 8,
+                     codeCount: Int = 8) -> DailyFonts {
         var generator = SeededGenerator(seed: day)
         // Sorted first, so the order of the catalogue file doesn't change the day's fonts.
         let sorted = catalogue.sorted { $0.token < $1.token }
         let code = sorted.filter(\.isMonospaced).shuffled(using: &generator)
-        let text = sorted.filter { !$0.isMonospaced }.shuffled(using: &generator)
-        return DailyFonts(day: day, text: Array(text.prefix(textCount)), code: Array(code.prefix(codeCount)))
+        let text = sorted.filter { !$0.isMonospaced && $0.kind != .expressive }.shuffled(using: &generator)
+        let expressive = sorted.filter { !$0.isMonospaced && $0.kind == .expressive }.shuffled(using: &generator)
+        return DailyFonts(day: day, text: Array(text.prefix(textCount)),
+                          expressive: Array(expressive.prefix(expressiveCount)), code: Array(code.prefix(codeCount)))
     }
 
     static func day(for date: Date, calendar: Calendar = .current) -> String {

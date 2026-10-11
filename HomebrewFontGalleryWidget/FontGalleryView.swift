@@ -14,16 +14,25 @@ struct FontGalleryView: View {
             case .systemMedium:
                 TextSample(text: Samples.pangram, font: font, pointSize: 28, size: family.sizeName)
             case .systemExtraLarge:
-                DocumentSample(heading: font,
-                               paragraph: self.font(entry.fonts.text, offset: 1) ?? font,
-                               code: self.font(entry.fonts.code, offset: 0),
-                               size: family.sizeName)
+                document(fallback: font)
             default:
                 TextSample(text: Samples.loremIpsum, font: font, pointSize: 16, size: family.sizeName)
             }
         } else {
             NoFontsView()
         }
+    }
+
+    /// The combination the buttons have reached, or one font throughout on a day that has none.
+    private func document(fallback: CachedFont) -> DocumentSample {
+        let fonts = entry.fonts
+        guard !fonts.combinations.isEmpty else {
+            return DocumentSample(heading: fallback, paragraph: fallback, code: fonts.code.first, size: family.sizeName)
+        }
+        let combination = fonts.combinations[DailyFonts.position(entry.presses, count: fonts.combinations.count)]
+        return DocumentSample(heading: fonts.font(combination.heading) ?? fallback,
+                              paragraph: fonts.font(combination.paragraph) ?? fallback,
+                              code: fonts.font(combination.code), size: family.sizeName)
     }
 
     /// The font the buttons have reached in a list, or the one a few places after it.

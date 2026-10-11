@@ -78,6 +78,14 @@ directly: Homebrew owns every install and uninstall.
 - `Shared/DailyFonts.swift` belongs to both the app and the widget, so the unit
   tests can reach it. It picks the day's fonts from the date alone, so every
   redraw of the day shows the same set.
+- `Shared/FontPairing.swift` chooses which fonts the extra large widget shows
+  together. Its header lists the rules it follows: a paragraph needs a plain
+  sans or serif of ordinary weight, width and x-height; pair by contrast (serif
+  with sans, or an expressive heading over plain text); prefer pairs whose
+  lowercase is about the same height and width; code takes the monospaced font
+  nearest the paragraph's x-height. Each font's kind comes from Google Fonts'
+  category, which `scripts/update-widget-fonts.sh` writes into the list, and
+  its proportions are measured from the downloaded file.
 - `DailyFontCache` downloads the day's fonts into the widget's own caches folder
   on the first drawing of the day and removes the day before's. The back and
   forward buttons are `RotateFontIntent`, which counts presses for each size.

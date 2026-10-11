@@ -2,12 +2,15 @@ import XCTest
 @testable import HomebrewFontGallery
 
 final class DailyFontsTests: XCTestCase {
-    private func font(_ token: String) -> WidgetFont {
-        WidgetFont(token: token, name: token, url: URL(string: "https://example.com/\(token).ttf")!, sha256: nil)
+    private func font(_ token: String, category: String? = nil) -> WidgetFont {
+        WidgetFont(token: token, name: token, url: URL(string: "https://example.com/\(token).ttf")!, sha256: nil, category: category)
     }
 
     private var catalogue: [WidgetFont] {
-        (0..<60).map { font("font-text-\($0)") } + (0..<20).map { font("font-sample-mono-\($0)") }
+        (0..<30).map { font("font-sans-\($0)", category: "Sans Serif") }
+            + (0..<30).map { font("font-serif-\($0)", category: "Serif") }
+            + (0..<40).map { font("font-display-\($0)", category: $0 % 2 == 0 ? "Display" : "Handwriting") }
+            + (0..<20).map { font("font-fixed-\($0)", category: "Monospace") }
     }
 
     func testTheSameDayAlwaysPicksTheSameFonts() {
@@ -20,34 +23,60 @@ final class DailyFontsTests: XCTestCase {
         let today = DailyFonts.pick(from: catalogue, day: "2026-10-11")
         let tomorrow = DailyFonts.pick(from: catalogue, day: "2026-10-12")
         XCTAssertNotEqual(today.text, tomorrow.text)
+        XCTAssertNotEqual(today.expressive, tomorrow.expressive)
         XCTAssertNotEqual(today.code, tomorrow.code)
     }
 
     func testPicksTheNumberAskedForWithoutRepeats() {
-        let picked = DailyFonts.pick(from: catalogue, day: "2026-10-11", textCount: 16, codeCount: 8)
-        XCTAssertEqual(picked.text.count, 16)
-        XCTAssertEqual(picked.code.count, 8)
-        XCTAssertEqual(Set(picked.text).count, 16)
+        let picked = DailyFonts.pick(from: catalogue, day: "2026-10-11", textCount: 14, expressiveCount: 8, codeCount: 8)
+        XCTAssertEqual(Set(picked.text).count, 14)
+        XCTAssertEqual(Set(picked.expressive).count, 8)
         XCTAssertEqual(Set(picked.code).count, 8)
     }
 
-    func testCodeFontsAreMonospacedAndTextFontsAreNot() {
+    func testEachKindOfFontIsPickedSeparately() {
         let picked = DailyFonts.pick(from: catalogue, day: "2026-10-11")
         XCTAssertTrue(picked.code.allSatisfy(\.isMonospaced))
-        XCTAssertFalse(picked.text.contains(where: \.isMonospaced))
+        XCTAssertTrue(picked.text.allSatisfy { $0.kind != .expressive && !$0.isMonospaced })
+        XCTAssertTrue(picked.expressive.allSatisfy { $0.kind == .expressive && !$0.isMonospaced })
     }
 
     func testASmallCatalogueGivesWhatItHas() {
-        let picked = DailyFonts.pick(from: [font("font-a"), font("font-b-mono")], day: "2026-10-11")
-        XCTAssertEqual(picked.text.map(\.token), ["font-a"])
+        let picked = DailyFonts.pick(from: [font("font-a"), font("font-b-mono"), font("font-c", category: "Serif")], day: "2026-10-11")
+        XCTAssertEqual(picked.expressive.map(\.token), ["font-a"])
         XCTAssertEqual(picked.code.map(\.token), ["font-b-mono"])
+        XCTAssertEqual(picked.text.map(\.token), ["font-c"])
     }
 
-    func testMonospacedIsReadFromTheName() {
+    func testMonospacedIsReadFromTheNameWhenThereIsNoCategory() {
         XCTAssertTrue(font("font-fira-code").isMonospaced)
         XCTAssertTrue(font("font-jetbrains-mono").isMonospaced)
         XCTAssertTrue(font("font-courier-prime").isMonospaced)
         XCTAssertFalse(font("font-inter").isMonospaced)
+        // "Monomaniac One" is a display font, whatever its name suggests.
+        XCTAssertFalse(font("font-monomaniac-one", category: "Display").isMonospaced)
+        XCTAssertTrue(font("font-cousine", category: "Monospace").isMonospaced)
+    }
+
+    func testKindComesFromTheCategoryOrFailingThatTheName() {
+        func named(_ name: String, _ category: String? = nil) -> WidgetFont {
+            WidgetFont(token: "font-x", name: name, url: URL(string: "https://example.com/x.ttf")!, sha256: nil, category: category)
+        }
+        XCTAssertEqual(named("Inter", "Sans Serif").kind, .sans)
+        XCTAssertEqual(named("Lora", "Serif").kind, .serif)
+        XCTAssertEqual(named("Lobster", "Display").kind, .expressive)
+        XCTAssertEqual(named("Caveat", "Handwriting").kind, .expressive)
+        XCTAssertEqual(named("42dot Sans").kind, .sans)
+        XCTAssertEqual(named("Roboto Slab").kind, .serif)
+        XCTAssertEqual(named("Mystery").kind, .expressive)
+        XCTAssertEqual(named("Bona Nova SC", "Serif").kind, .expressive)
+        XCTAssertEqual(named("Sankofa Display", "Sans Serif").kind, .expressive)
+    }
+
+    func testGoogleCategoriesAreReadByFamilyName() {
+        let metadata = Data(#"{"familyMetadataList":[{"family":"ABeeZee","category":"Sans Serif","size":1},{"family":"Lora","category":"Serif"}]}"#.utf8)
+        XCTAssertEqual(WidgetFontExport.categories(inGoogleMetadata: metadata), ["abeezee": "Sans Serif", "lora": "Serif"])
+        XCTAssertEqual(WidgetFontExport.categories(inGoogleMetadata: Data("<html>".utf8)), [:])
     }
 
     func testDayIsWrittenInTheCalendarsTimeZone() throws {

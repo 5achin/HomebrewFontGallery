@@ -10,6 +10,7 @@ struct CachedFont: Codable, Hashable {
     /// The file's name inside the day's folder.
     let file: String
     let postScriptName: String
+    let traits: FontTraits
 }
 
 /// The fonts in use for one day, as recorded beside their files.
@@ -17,16 +18,26 @@ struct CachedDay: Codable, Hashable {
     let day: String
     var text: [CachedFont]
     var code: [CachedFont]
+    /// The fonts to show together in the extra large widget, best matched first.
+    var combinations: [FontCombination]
 
-    static let empty = CachedDay(day: "", text: [], code: [])
+    static let empty = CachedDay(day: "", text: [], code: [], combinations: [])
+
+    func font(_ token: String?) -> CachedFont? {
+        guard let token else { return nil }
+        return (text + code).first { $0.token == token }
+    }
 }
 
 /// Keeps the day's fonts in the widget's own cache folder. The first drawing of the day
 /// downloads them, every later one reads them from disk, and the day before's are removed.
 /// Nothing here installs a font: the files are only read to draw the widget.
 enum DailyFontCache {
-    static let textCount = 8
+    /// How many plain fonts, and how many expressive ones, to keep for the day.
+    static let textCount = 6
+    static let expressiveCount = 6
     static let codeCount = 4
+    static let combinationCount = 8
     /// Larger files are mostly fonts for Chinese, Japanese and Korean, which the samples don't suit.
     static let maximumDownloadSize = 4 << 20
 
@@ -55,9 +66,17 @@ enum DailyFontCache {
         let folder = folder(for: day)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
 
-        async let text = download(picked.text, monospaced: false, into: folder)
-        async let code = download(picked.code, monospaced: true, into: folder)
-        let fetched = CachedDay(day: day, text: Array(await text.prefix(textCount)), code: Array(await code.prefix(codeCount)))
+        async let plain = download(picked.text, monospaced: false, into: folder)
+        async let expressive = download(picked.expressive, monospaced: false, into: folder)
+        async let monospaced = download(picked.code, monospaced: true, into: folder)
+        // Plain fonts that can set a paragraph are kept first, so the day has enough of them to pair with.
+        let suited = await plain.filter { FontPairing.suitsParagraphs($0.traits) }
+        let unsuited = await plain.filter { !FontPairing.suitsParagraphs($0.traits) }
+        let text = interleave(Array((suited + unsuited).prefix(textCount)), Array(await expressive.prefix(expressiveCount)))
+        let code = Array(await monospaced.prefix(codeCount))
+        let fetched = CachedDay(day: day, text: text, code: code,
+                                combinations: FontPairing.combinations(text: text.map(\.candidate), code: code.map(\.candidate),
+                                                                       limit: combinationCount))
         guard !fetched.text.isEmpty else {
             log.error("None of the fonts for \(day, privacy: .public) could be downloaded.")
             try? FileManager.default.removeItem(at: folder)
@@ -69,6 +88,13 @@ enum DailyFontCache {
         }
         removeDays(except: day)
         return fetched
+    }
+
+    /// Takes from each list in turn, so the back and forward buttons alternate between the kinds.
+    private static func interleave(_ first: [CachedFont], _ second: [CachedFont]) -> [CachedFont] {
+        (0..<max(first.count, second.count)).flatMap { index in
+            [first, second].compactMap { $0.indices.contains(index) ? $0[index] : nil }
+        }
     }
 
     private static func read(_ day: String) -> CachedDay? {
@@ -137,22 +163,30 @@ enum DailyFontCache {
         let name = "\(font.token).\(font.url.pathExtension.lowercased())"
         let file = folder.appendingPathComponent(name)
         guard (try? data.write(to: file, options: .atomic)) != nil,
-              let postScriptName = FontFiles.latinPostScriptName(of: file, monospaced: monospaced) else {
+              let measured = FontFiles.measure(file, kind: font.kind, monospaced: monospaced) else {
             try? FileManager.default.removeItem(at: file)
             return nil
         }
-        return CachedFont(token: font.token, name: font.name, file: name, postScriptName: postScriptName)
+        return CachedFont(token: font.token, name: font.name, file: name, postScriptName: measured.postScriptName,
+                          traits: measured.traits)
+    }
+}
+
+extension CachedFont {
+    var candidate: FontPairing.Candidate {
+        FontPairing.Candidate(token: token, name: name, traits: traits)
     }
 }
 
 enum FontFiles {
-    /// The name of the first style in the file, or nil when the file isn't a font
-    /// or has no Latin letters to draw the samples with. A font wanted for code must
+    /// The name and measurements of the first style in the file, or nil when the file isn't
+    /// a font or has no Latin letters to draw the samples with. A font wanted for code must
     /// also give every letter the same width, whatever its name suggests.
-    static func latinPostScriptName(of file: URL, monospaced: Bool) -> String? {
+    static func measure(_ file: URL, kind: FontKind, monospaced: Bool) -> (postScriptName: String, traits: FontTraits)? {
         guard let descriptor = (CTFontManagerCreateFontDescriptorsFromURL(file as CFURL) as? [CTFontDescriptor])?.first,
               let name = CTFontDescriptorCopyAttribute(descriptor, kCTFontNameAttribute) as? String else { return nil }
-        let font = CTFontCreateWithFontDescriptor(descriptor, 12, nil)
+        let size = 100.0
+        let font = CTFontCreateWithFontDescriptor(descriptor, size, nil)
         let letters = Array("AaBbGgQqRr0123".utf16)
         var glyphs = [CGGlyph](repeating: 0, count: letters.count)
         guard CTFontGetGlyphsForCharacters(font, letters, &glyphs, letters.count) else { return nil }
@@ -161,7 +195,24 @@ enum FontFiles {
             CTFontGetAdvancesForGlyphs(font, .horizontal, glyphs, &advances, glyphs.count)
             guard advances.allSatisfy({ abs($0.width - advances[0].width) < 0.01 }) else { return nil }
         }
-        return name
+
+        // The letters' own outlines are measured, as the heights a font declares are often wrong.
+        let capHeight = height(of: "H", in: font)
+        let lowercase = Array("abcdefghijklmnopqrstuvwxyz".utf16)
+        var lowercaseGlyphs = [CGGlyph](repeating: 0, count: lowercase.count)
+        guard capHeight > 0, CTFontGetGlyphsForCharacters(font, lowercase, &lowercaseGlyphs, lowercase.count) else { return nil }
+        let advance = CTFontGetAdvancesForGlyphs(font, .horizontal, lowercaseGlyphs, nil, lowercaseGlyphs.count)
+        let weight = (CTFontCopyTraits(font) as? [CFString: Any])?[kCTFontWeightTrait] as? Double ?? 0
+        let traits = FontTraits(kind: kind, xHeight: height(of: "x", in: font) / capHeight,
+                                width: advance / Double(lowercase.count) / size, weight: weight)
+        return (name, traits)
+    }
+
+    private static func height(of letter: Character, in font: CTFont) -> Double {
+        let characters = Array(String(letter).utf16)
+        var glyphs = [CGGlyph](repeating: 0, count: characters.count)
+        guard CTFontGetGlyphsForCharacters(font, characters, &glyphs, characters.count) else { return 0 }
+        return CTFontGetBoundingRectsForGlyphs(font, .horizontal, glyphs, nil, glyphs.count).maxY
     }
 
     /// Makes the font usable by name in this process. Registering one twice does no harm.
