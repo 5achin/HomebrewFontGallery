@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var confirmingCancel = false
     @State private var detailsHidden = false
     @State private var columnCount = 3
+    private static let detailsWidth: CGFloat = 400
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
 
@@ -14,7 +15,32 @@ struct ContentView: View {
             sidebar
                 .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 260)
         } detail: {
-            gallery
+            // Outside the navigation stack, the details pane runs the full height of the
+            // window and the toolbar stops at the edge of the grid.
+            NavigationStack {
+                gallery
+            }
+            .inspector(isPresented: showingDetails) {
+                if let font = model.selectedFont {
+                    FontDetailView(font: font, activity: model.activity, status: model.status)
+                        // A set width, so the toolbar can leave exactly that much room above it.
+                        .inspectorColumnWidth(Self.detailsWidth)
+                        // An empty stretch of toolbar as wide as the pane keeps the window's
+                        // buttons to the left of it, so the toolbar ends where the grid does.
+                        .toolbar {
+                            if #available(macOS 26.0, *) {
+                                ToolbarItem {
+                                    toolbarGap
+                                }
+                                .sharedBackgroundVisibility(.hidden)
+                            } else {
+                                ToolbarItem {
+                                    toolbarGap
+                                }
+                            }
+                        }
+                }
+            }
         }
         // Searching from the sidebar leaves the far right of the toolbar to the font's action.
         .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
@@ -43,16 +69,10 @@ struct ContentView: View {
 
     private var gallery: some View {
         content
-            .inspector(isPresented: showingDetails) {
-                if let font = model.selectedFont {
-                    FontDetailView(font: font, activity: model.activity, status: model.status)
-                        .inspectorColumnWidth(min: 340, ideal: 400, max: 560)
-                }
-            }
             .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
             .toolbar {
-                ToolbarItem {
+                ToolbarItem(placement: .principal) {
                     Picker("Show", selection: $model.filter) {
                         ForEach(GalleryModel.Filter.allCases) { filter in
                             Text(filter.rawValue).tag(filter)
@@ -61,7 +81,7 @@ struct ContentView: View {
                     .pickerStyle(.segmented)
                     .help("Show all fonts, or only the ones that are installed or not installed.")
                 }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem {
                     Button {
                         detailsHidden.toggle()
                     } label: {
@@ -70,7 +90,7 @@ struct ContentView: View {
                     .disabled(model.selectedFont == nil)
                     .help(detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
                 }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem {
                     primaryAction
                 }
             }
@@ -108,6 +128,11 @@ struct ContentView: View {
                     detailsHidden = false
                 }
             }
+    }
+
+    private var toolbarGap: some View {
+        // With the pane hidden there is nothing to leave room for.
+        Color.clear.frame(width: showingDetails.wrappedValue ? Self.detailsWidth - 12 : 0, height: 28).fixedSize()
     }
 
     /// The details pane slides out whenever a font is selected, unless it has been hidden.
