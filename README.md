@@ -4,12 +4,12 @@
 
 A native Mac app for browsing, previewing and installing the fonts Homebrew offers.
 
-<!-- A screenshot of the main window (docs/main-window.png) goes here once the app has a window. -->
+<p align="center"><img src="docs/main-window.png" alt="The Homebrew Font Gallery window, showing a preview of Maple Mono" width="900"></p>
 
 ## What it does
 
 - Lists every `font-*` cask Homebrew knows about, with search and filters for installed and not-installed fonts.
-- Renders a live preview of each font with your own sample text, size and weight.
+- Renders a live preview of each font with your own sample text, size and style.
 - Installs and uninstalls fonts with one click by running `brew install --cask` and `brew uninstall --cask`.
 - Shows cask details (version, homepage, description) from `brew info --json`.
 
@@ -41,7 +41,7 @@ You only need to do this once.
 
 1. **Open the app.** It loads every font Homebrew offers. This takes a few seconds the first time.
 2. **Find a font.** Type in the search field, or filter to installed or not-installed fonts.
-3. **Preview it.** Select a font to see it in your own sample text, at the size and weight you choose.
+3. **Preview it.** Select a font to see it in your own sample text, at the size and style you choose.
 4. **Install it.** Click **Install** in the toolbar, or press Return. The font is ready to use in other apps as soon as it finishes.
 5. **Remove it.** Select an installed font, click **Uninstall** and confirm.
 
@@ -81,4 +81,8 @@ Font casks install into your own `~/Library/Fonts`, so the app never asks for an
 
 ## Status
 
-Early development. The app is not scaffolded yet.
+Early development. The first version lists fonts, previews them, and installs and uninstalls them. Still to come:
+
+- An app icon.
+- Previews for fonts that Homebrew downloads as an archive. Today a font can be previewed before installing only when its download is a single font file, which covers about 1,500 of the 2,600 fonts. The rest say "Install this font to preview it."
+- Fonts that come as an installer package (Apple's San Francisco and New York fonts) are left out of the list, because installing them needs an administrator password.
