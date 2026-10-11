@@ -56,7 +56,11 @@ final class GalleryModel {
     }
 
     private(set) var fonts: [FontCask] = [] {
-        didSet { updateVisibleFonts() }
+        didSet {
+            installedCount = fonts.lazy.filter(\.isInstalled).count
+            updateSelectedFont()
+            updateVisibleFonts()
+        }
     }
     private(set) var loadState = LoadState.loading
     private(set) var activity: Activity?
@@ -66,16 +70,23 @@ final class GalleryModel {
     private(set) var categories: [FontCategory] = []
     static let categoryLimit = 8
 
-    var selection: FontCask.ID?
-    /// The category chosen in the sidebar, or nil for all fonts.
-    var category: FontCategory.ID? {
+    var selection: FontCask.ID? {
+        didSet { updateSelectedFont() }
+    }
+    /// What is chosen in the sidebar.
+    var section = Section.all {
         didSet { updateVisibleFonts() }
     }
     var searchText = "" {
         didSet { updateVisibleFonts() }
     }
-    var filter = Filter.all {
-        didSet { updateVisibleFonts() }
+
+    /// One row of the sidebar: every font, the installed or not-installed ones, or a category.
+    enum Section: Hashable {
+        case all
+        case installed
+        case notInstalled
+        case category(FontCategory.ID)
     }
 
     private let brew: BrewService
@@ -85,8 +96,16 @@ final class GalleryModel {
         self.brew = brew
     }
 
-    var selectedFont: FontCask? {
-        selection.flatMap { token in fonts.first { $0.token == token } }
+    /// The selected font. It is looked up when the selection or the fonts change, and
+    /// kept, because several views read it every time they are redrawn.
+    private(set) var selectedFont: FontCask?
+    private(set) var installedCount = 0
+
+    private func updateSelectedFont() {
+        let found = selection.flatMap { token in fonts.first { $0.token == token } }
+        if found != selectedFont {
+            selectedFont = found
+        }
     }
 
     var isBusy: Bool { activity != nil }
@@ -100,8 +119,17 @@ final class GalleryModel {
 
     private func updateVisibleFonts() {
         visibleFontsVersion += 1
-        visibleFonts = GalleryModel.filter(fonts, by: filter, searchText: searchText,
-                                           category: categories.first { $0.id == category })
+        let filter: Filter
+        var category: FontCategory?
+        switch section {
+        case .all: filter = .all
+        case .installed: filter = .installed
+        case .notInstalled: filter = .notInstalled
+        case .category(let id):
+            filter = .all
+            category = categories.first { $0.id == id }
+        }
+        visibleFonts = GalleryModel.filter(fonts, by: filter, searchText: searchText, category: category)
     }
 
     nonisolated static func filter(_ fonts: [FontCask], by filter: Filter, searchText: String,

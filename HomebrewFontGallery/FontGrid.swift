@@ -14,7 +14,7 @@ struct FontGrid: View {
             if model.visibleFonts.isEmpty {
                 if model.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
                     ContentUnavailableView("No Fonts", systemImage: "textformat",
-                                           description: Text(model.filter == .installed ? "Fonts you install appear here." : "There are no fonts to show."))
+                                           description: Text(model.section == .installed ? "Fonts you install appear here." : "There are no fonts to show."))
                 } else {
                     ContentUnavailableView.search(text: model.searchText)
                 }

@@ -2,8 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var model = GalleryModel()
-    @State private var confirmingUninstall: FontCask?
-    @State private var confirmingCancel = false
     /// What the window is showing, shared with the grid.
     @State private var window = WindowState()
     /// False while the window is first opening, when the pane appears without resizing it.
@@ -14,8 +12,8 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 160, ideal: 190, max: 260)
+            SidebarView(model: model)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             // Outside the navigation stack, the details pane runs the full height of the
             // window and the toolbar stops at the edge of the grid.
@@ -24,7 +22,7 @@ struct ContentView: View {
             }
             .inspector(isPresented: showingDetails) {
                 if let font = model.selectedFont {
-                    FontDetailView(font: font, activity: model.activity, status: model.status)
+                    DetailsPane(model: model, font: font)
                         // A set width, so the toolbar can leave exactly that much room above it.
                         .inspectorColumnWidth(Self.detailsWidth)
                         // A stretch of toolbar as wide as the pane holds the font's action in the
@@ -42,7 +40,7 @@ struct ContentView: View {
                                     }
                                 }
                                 ToolbarItem {
-                                    primaryAction
+                                    FontActionButton(model: model, window: window)
                                         .frame(width: Self.actionWidth)
                                 }
                                 if #available(macOS 26.0, *) {
@@ -86,25 +84,6 @@ struct ContentView: View {
         }
     }
 
-    // MARK: Sidebar
-
-    private var sidebar: some View {
-        List(selection: $model.category) {
-            Label("All Fonts", systemImage: "square.grid.2x2")
-                .badge(model.fonts.count)
-                .tag(FontCategory.ID?.none)
-            if !model.categories.isEmpty {
-                Section("Categories") {
-                    ForEach(model.categories) { category in
-                        Label(category.word, systemImage: "textformat")
-                            .badge(category.count)
-                            .tag(FontCategory.ID?.some(category.id))
-                    }
-                }
-            }
-        }
-    }
-
     // MARK: Gallery
 
     private var gallery: some View {
@@ -112,33 +91,6 @@ struct ContentView: View {
             .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
             .toolbar {
-                // The filter is three tabs in the centre while there is room for them, and
-                // folds into a menu when the grid is too narrow.
-                if window.isCompact {
-                    ToolbarItem {
-                        Menu {
-                            Picker("Show", selection: $model.filter) {
-                                ForEach(GalleryModel.Filter.allCases) { filter in
-                                    Text(filter.rawValue).tag(filter)
-                                }
-                            }
-                            .pickerStyle(.inline)
-                        } label: {
-                            Label("Show", systemImage: "line.3.horizontal.decrease")
-                        }
-                        .help("Show all fonts, or only the ones that are installed or not installed.")
-                    }
-                } else {
-                    ToolbarItem(placement: .principal) {
-                        Picker("Show", selection: $model.filter) {
-                            ForEach(GalleryModel.Filter.allCases) { filter in
-                                Text(filter.rawValue).tag(filter)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .help("Show all fonts, or only the ones that are installed or not installed.")
-                    }
-                }
                 ToolbarItem {
                     Button {
                         WindowState.withoutAnimation {
@@ -152,9 +104,9 @@ struct ContentView: View {
                 }
             }
             .confirmationDialog(
-                "Uninstall “\(confirmingUninstall?.name ?? "")”?",
-                isPresented: Binding(get: { confirmingUninstall != nil }, set: { if !$0 { confirmingUninstall = nil } }),
-                presenting: confirmingUninstall
+                "Uninstall “\(window.confirmingUninstall?.name ?? "")”?",
+                isPresented: Binding(get: { window.confirmingUninstall != nil }, set: { if !$0 { window.confirmingUninstall = nil } }),
+                presenting: window.confirmingUninstall
             ) { font in
                 Button("Uninstall", role: .destructive) {
                     model.uninstall(font)
@@ -163,7 +115,7 @@ struct ContentView: View {
             } message: { font in
                 Text("Homebrew will remove \(Self.fileCount(font)) from your Fonts folder. Documents that use the font will show a different one until you install it again.")
             }
-            .confirmationDialog(cancelTitle, isPresented: $confirmingCancel) {
+            .confirmationDialog(cancelTitle, isPresented: $window.confirmingCancel) {
                 Button(stopLabel, role: .destructive) {
                     model.cancelActivity()
                 }
@@ -183,7 +135,7 @@ struct ContentView: View {
     }
 
     /// The action is one width whatever its title, so the space beside it can be exact.
-    private static let actionWidth: CGFloat = 112
+    private static let actionWidth: CGFloat = 140
 
     /// Empty toolbar on each side of the action, which centres it over the pane.
     private var paneToolbarGap: some View {
@@ -259,47 +211,6 @@ struct ContentView: View {
             }
         case .loaded:
             FontGrid(model: model, window: window)
-        }
-    }
-
-    // MARK: Toolbar
-
-    @ViewBuilder
-    private var primaryAction: some View {
-        if let activity = model.activity {
-            Button {
-                confirmingCancel = true
-            } label: {
-                Label("Cancel", systemImage: "xmark.circle")
-            }
-            .labelStyle(.titleAndIcon)
-            .disabled(activity.isCancelling)
-            .help(activity.kind == .installing ? "Stop installing “\(activity.name)”." : "Stop uninstalling “\(activity.name)”.")
-        } else if let font = model.selectedFont, font.isInstalled {
-            Button {
-                confirmingUninstall = font
-            } label: {
-                Label("Uninstall", systemImage: "trash")
-            }
-            .labelStyle(.titleAndIcon)
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
-            .disabled(font.needsInstaller)
-            .help("Remove “\(font.name)” from this Mac.")
-        } else {
-            Button {
-                if let font = model.selectedFont {
-                    model.install(font)
-                }
-            } label: {
-                Label("Install", systemImage: "arrow.down.circle")
-            }
-            .labelStyle(.titleAndIcon)
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .keyboardShortcut(.defaultAction)
-            .disabled(model.selectedFont?.isInstallable != true)
-            .help(model.selectedFont.map { "Install “\($0.name)” on this Mac." } ?? "Select a font to install it.")
         }
     }
 

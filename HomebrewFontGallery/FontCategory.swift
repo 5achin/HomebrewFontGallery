@@ -9,6 +9,22 @@ struct FontCategory: Identifiable, Hashable {
 
     var id: String { word.lowercased() }
 
+    /// An SF Symbol for the sidebar. Words without one of their own get the plain text symbol.
+    var symbolName: String {
+        switch id {
+        case "one": return "1.circle"
+        case "sans": return "textformat"
+        case "mono", "code": return "chevron.left.forwardslash.chevron.right"
+        case "guides": return "pencil.line"
+        case "sc", "tc", "jp", "kr": return "character.textbox"
+        case "script": return "signature"
+        case "display": return "textformat.size.larger"
+        case "condensed": return "arrow.right.and.line.vertical.and.arrow.left"
+        case "serif", "slab": return "textformat.abc"
+        default: return "textformat"
+        }
+    }
+
     /// The most common last words of the fonts' names, most common first.
     static func top(_ limit: Int, in fonts: [FontCask]) -> [FontCategory] {
         var endings: [String: Int] = [:]

@@ -11,9 +11,6 @@ struct FontCollection: NSViewRepresentable {
     let model: GalleryModel
     let window: WindowState
 
-    /// Below this width of grid, the title and the filter tabs no longer fit side by side.
-    static let compactWidth: CGFloat = 620
-
     /// Every card is this wide, the size of Font Book's, whatever the window's size.
     static let cardSide: CGFloat = 116
     static let itemSize = NSSize(width: cardSide, height: cardSide + 8 + 32)
@@ -48,9 +45,7 @@ struct FontCollection: NSViewRepresentable {
         scrollView.documentView = collectionView
         scrollView.hasVerticalScroller = true
         scrollView.drawsBackground = false
-        scrollView.contentView.postsFrameChangedNotifications = true
         context.coordinator.collectionView = collectionView
-        context.coordinator.observeWidth(of: scrollView)
         context.coordinator.observeModel()
         // SwiftUI can build this view in the middle of a change to the model, when the new
         // value isn't readable yet and the change has already been announced. Look again
@@ -73,7 +68,6 @@ struct FontCollection: NSViewRepresentable {
         private var fonts: [FontCask] = []
         private var version = -1
         private var scrollResetKey: String?
-        private var widthObserver: NSObjectProtocol?
         /// The selection as last set by a click or key press in the collection view.
         private var selectionFromHere: FontCask.ID?
         private var watch = 0
@@ -109,34 +103,12 @@ struct FontCollection: NSViewRepresentable {
             }
         }
 
-        deinit {
-            if let widthObserver {
-                NotificationCenter.default.removeObserver(widthObserver)
-            }
-        }
-
-        func observeWidth(of scrollView: NSScrollView) {
-            widthObserver = NotificationCenter.default.addObserver(
-                forName: NSView.frameDidChangeNotification, object: scrollView.contentView, queue: .main
-            ) { [weak self, weak scrollView] _ in
-                guard let width = scrollView?.frame.width else { return }
-                MainActor.assumeIsolated {
-                    guard let self else { return }
-                    // This only changes as the width crosses one point, so it is cheap.
-                    let compact = width < FontCollection.compactWidth
-                    if compact != self.window.isCompact {
-                        self.window.isCompact = compact
-                    }
-                }
-            }
-        }
-
         /// Brings the collection view in line with the model's fonts, selection and activity.
         private func update() {
             let newVersion = model.visibleFontsVersion
             let selection = model.selection
             let busyToken = model.activity?.token
-            let newScrollResetKey = model.category ?? ""
+            let newScrollResetKey = "\(model.section)"
             guard let collectionView else { return }
 
             if version != newVersion {

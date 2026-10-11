@@ -10,7 +10,7 @@ A native Mac app for browsing, previewing and installing the fonts Homebrew offe
 
 ## What it does
 
-- Shows every `font-*` cask Homebrew knows about as a grid of thumbnails, with search and filters for installed and not-installed fonts.
+- Shows every `font-*` cask Homebrew knows about as a grid of thumbnails, with search, and sidebar filters for installed and not-installed fonts.
 - Groups fonts into categories in the sidebar, by the most common last words of their names (Sans, Mono, Script and so on).
 - Renders a live preview of each font with your own sample text, size and style.
 - Installs and uninstalls fonts with one click by running `brew install --cask` and `brew uninstall --cask`.
@@ -43,9 +43,9 @@ You only need to do this once.
 ## How to use it
 
 1. **Open the app.** It loads every font Homebrew offers. This takes a few seconds the first time.
-2. **Find a font.** Type in the search field, or filter to installed or not-installed fonts.
+2. **Find a font.** Type in the search field, or choose Installed, Not Installed or a category in the sidebar.
 3. **Preview it.** Click a font's thumbnail and its details slide out on the right. There you can see it in your own sample text, at the size and style you choose.
-4. **Install it.** Click **Install** in the toolbar, or press Return. The font is ready to use in other apps as soon as it finishes.
+4. **Install it.** Click the green **Install** button above the details, or press Return. The button shows a spinner while Homebrew works, then turns into a red **Uninstall** button. The font is ready to use in other apps as soon as it finishes.
 5. **Remove it.** Select an installed font, click **Uninstall** and confirm.
 
 ## Troubleshooting

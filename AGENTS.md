@@ -90,7 +90,9 @@ Guidelines: system controls, colours, fonts and spacing only, and no visible
   `~/Developer/AGENTS.md`: Install is a green prominent button and Uninstall a
   red one, centred above the details pane; the toolbar ends at the edge of
   the grid, with the pane full height beside it; the All, Installed and Not
-  Installed filter is centred; the search field lives in the sidebar.
+  Installed filters are rows in the sidebar, under All Fonts; the search field
+  lives in the sidebar; while Homebrew works the action button shows a spinner
+  and stays in place (clicking it offers to stop), then fades to red.
 - Search with `.searchable`. Filters for installed and not-installed fonts use a
   standard control, not custom chips.
 - The cask list loads by itself on launch. No refresh button.

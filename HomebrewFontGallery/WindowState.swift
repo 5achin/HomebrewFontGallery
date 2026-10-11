@@ -9,8 +9,10 @@ import SwiftUI
 final class WindowState {
     /// True when the user has hidden the details pane.
     var detailsHidden = false
-    /// True when the grid is too narrow for the toolbar's filter tabs.
-    var isCompact = false
+    /// The font whose uninstall is waiting to be confirmed.
+    var confirmingUninstall: FontCask?
+    /// True while stopping the current install or uninstall is waiting to be confirmed.
+    var confirmingCancel = false
 
     /// Makes a change that shows or hides the details pane without sliding it.
     static func withoutAnimation(_ change: () -> Void) {
