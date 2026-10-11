@@ -131,6 +131,9 @@ final class GalleryModel {
         } catch BrewError.notInstalled {
             loadState = .homebrewMissing
         } catch {
+            // A load that was cancelled hasn't failed: the window started another in its
+            // place, and that one decides what to show.
+            guard !Task.isCancelled, (error as? BrewError) != .cancelled else { return }
             loadState = .failed
         }
     }

@@ -61,6 +61,14 @@ struct ContentView: View {
             }
         }
         .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
+        // On the window itself, so the fonts load once. On the grid, the load ran twice.
+        .task {
+            guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
+            await model.load()
+            if model.selection == nil, !lastSelection.isEmpty {
+                model.selection = lastSelection
+            }
+        }
     }
 
     // MARK: Sidebar
@@ -129,13 +137,6 @@ struct ContentView: View {
                 Text(cancelMessage)
             }
             .frame(minWidth: 760, minHeight: 460)
-            .task {
-                guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
-                await model.load()
-                if model.selection == nil, !lastSelection.isEmpty {
-                    model.selection = lastSelection
-                }
-            }
             .onChange(of: model.selection) { _, selection in
                 if let selection {
                     lastSelection = selection
