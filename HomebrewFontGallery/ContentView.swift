@@ -16,6 +16,8 @@ struct ContentView: View {
         } detail: {
             gallery
         }
+        // Searching from the sidebar leaves the far right of the toolbar to the font's action.
+        .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
     }
 
     // MARK: Sidebar
@@ -49,7 +51,6 @@ struct ContentView: View {
             }
             .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
-            .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search Fonts")
             .toolbar {
                 ToolbarItem {
                     Picker("Show", selection: $model.filter) {
@@ -61,9 +62,6 @@ struct ContentView: View {
                     .help("Show all fonts, or only the ones that are installed or not installed.")
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    primaryAction
-                }
-                ToolbarItem(placement: .primaryAction) {
                     Button {
                         detailsHidden.toggle()
                     } label: {
@@ -71,6 +69,9 @@ struct ContentView: View {
                     }
                     .disabled(model.selectedFont == nil)
                     .help(detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    primaryAction
                 }
             }
             .confirmationDialog(
@@ -272,6 +273,8 @@ struct ContentView: View {
                 Label("Uninstall", systemImage: "trash")
             }
             .labelStyle(.titleAndIcon)
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
             .disabled(font.needsInstaller)
             .help("Remove “\(font.name)” from this Mac.")
         } else {
@@ -283,6 +286,8 @@ struct ContentView: View {
                 Label("Install", systemImage: "arrow.down.circle")
             }
             .labelStyle(.titleAndIcon)
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
             .keyboardShortcut(.defaultAction)
             .disabled(model.selectedFont?.isInstallable != true)
             .help(model.selectedFont.map { "Install “\($0.name)” on this Mac." } ?? "Select a font to install it.")
