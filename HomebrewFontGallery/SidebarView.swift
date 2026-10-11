@@ -34,8 +34,19 @@ struct SidebarView: View {
         )
     }
 
+    /// Every icon is drawn to fit the same square, so wide symbols and narrow ones take up
+    /// the same room and the titles line up.
+    private static let iconSide: CGFloat = 16
+
     private func row(_ title: String, systemImage: String, count: Int) -> some View {
-        Label(title, systemImage: systemImage)
-            .badge(model.loadState == .loaded ? Text(count.formatted()) : nil)
+        Label {
+            Text(title)
+        } icon: {
+            Image(systemName: systemImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: Self.iconSide, height: Self.iconSide)
+        }
+        .badge(model.loadState == .loaded ? Text(count.formatted()) : nil)
     }
 }
