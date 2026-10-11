@@ -47,6 +47,8 @@ You only need to do this once.
 3. **Preview it.** Click a font's thumbnail and its details slide out on the right. There you can see it in your own sample text, at the size and style you choose.
 4. **Install it.** Click the green **Install** button above the details, or press Return. The button shows a spinner while Homebrew works, then turns into a red **Uninstall** button. The font is ready to use in other apps as soon as it finishes.
 5. **Remove it.** Select an installed font, click **Uninstall** and confirm.
+6. **Do several at once.** Command-click or Shift-click to select more fonts. The button becomes **Install 3 Fonts**, say, and Homebrew installs them one after another. When every selected font is already installed, it becomes **Uninstall** for all of them.
+7. **Hide the details.** Click the button at the right of the toolbar to hide the details pane. Install and Uninstall move to the toolbar, and the pane stays hidden until you show it again.
 
 ## Troubleshooting
 

@@ -9,8 +9,8 @@ import SwiftUI
 final class WindowState {
     /// True when the user has hidden the details pane.
     var detailsHidden = false
-    /// The font whose uninstall is waiting to be confirmed.
-    var confirmingUninstall: FontCask?
+    /// The fonts whose uninstall is waiting to be confirmed.
+    var confirmingUninstall: [FontCask] = []
     /// True while stopping the current install or uninstall is waiting to be confirmed.
     var confirmingCancel = false
 

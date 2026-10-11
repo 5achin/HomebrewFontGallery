@@ -35,10 +35,10 @@ struct FontCollection: NSViewRepresentable {
         collectionView.delegate = context.coordinator
         collectionView.isSelectable = true
         collectionView.allowsEmptySelection = true
-        collectionView.allowsMultipleSelection = false
+        collectionView.allowsMultipleSelection = true
         collectionView.backgroundColors = [.clear]
         collectionView.onCancel = { [weak coordinator = context.coordinator] in
-            coordinator?.report(selection: nil)
+            coordinator?.report(selection: [])
         }
 
         let scrollView = NSScrollView()
@@ -69,7 +69,7 @@ struct FontCollection: NSViewRepresentable {
         private var version = -1
         private var scrollResetKey: String?
         /// The selection as last set by a click or key press in the collection view.
-        private var selectionFromHere: FontCask.ID?
+        private var selectionFromHere: Set<FontCask.ID> = []
         private var watch = 0
 
         init(_ parent: FontCollection) {
@@ -93,14 +93,21 @@ struct FontCollection: NSViewRepresentable {
         }
 
         /// Passes a selection made in the grid on to the model.
-        func report(selection token: FontCask.ID?) {
-            selectionFromHere = token
+        func report(selection tokens: Set<FontCask.ID>) {
+            selectionFromHere = tokens
+            guard model.selection != tokens else { return }
             WindowState.withoutAnimation {
-                model.selection = token
-                if token != nil {
-                    window.detailsHidden = false
-                }
+                model.selection = tokens
             }
+        }
+
+        /// Passes on whatever is selected in the collection view now.
+        private func reportSelection(of collectionView: NSCollectionView) {
+            let fonts = fonts
+            report(selection: Set(collectionView.selectionIndexPaths.lazy
+                .map(\.item)
+                .filter(fonts.indices.contains)
+                .map { fonts[$0].token }))
         }
 
         /// Brings the collection view in line with the model's fonts, selection and activity.
@@ -146,7 +153,7 @@ struct FontCollection: NSViewRepresentable {
             // last time, is brought into view.
             if selection != selectionFromHere {
                 selectionFromHere = selection
-                if let selected = collectionView.selectionIndexPaths.first {
+                if let selected = collectionView.selectionIndexPaths.min() {
                     collectionView.layoutSubtreeIfNeeded()
                     collectionView.scrollToItems(at: [selected], scrollPosition: .centeredVertically)
                 }
@@ -164,12 +171,16 @@ struct FontCollection: NSViewRepresentable {
         }
 
         /// Makes the collection view's selection match the model's, without telling the model.
-        private func select(_ token: FontCask.ID?, in collectionView: NSCollectionView) {
-            let wanted: Set<IndexPath>
-            if let token, let index = fonts.firstIndex(where: { $0.token == token }) {
-                wanted = [IndexPath(item: index, section: 0)]
-            } else {
-                wanted = []
+        private func select(_ tokens: Set<FontCask.ID>, in collectionView: NSCollectionView) {
+            var wanted: Set<IndexPath> = []
+            if tokens.count == 1, let token = tokens.first {
+                if let index = fonts.firstIndex(where: { $0.token == token }) {
+                    wanted = [IndexPath(item: index, section: 0)]
+                }
+            } else if !tokens.isEmpty {
+                for (index, font) in fonts.enumerated() where tokens.contains(font.token) {
+                    wanted.insert(IndexPath(item: index, section: 0))
+                }
             }
             if collectionView.selectionIndexPaths != wanted {
                 collectionView.selectionIndexPaths = wanted
@@ -194,17 +205,15 @@ struct FontCollection: NSViewRepresentable {
         // MARK: Delegate
 
         func collectionView(_ collectionView: NSCollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
-            guard let index = indexPaths.first?.item, fonts.indices.contains(index) else { return }
-            report(selection: fonts[index].token)
+            reportSelection(of: collectionView)
         }
 
         func collectionView(_ collectionView: NSCollectionView, didDeselectItemsAt indexPaths: Set<IndexPath>) {
             // Moving from one font to another deselects the first before selecting the second.
-            // Wait to see whether anything ends up selected before reporting an empty selection.
+            // Wait to see what ends up selected before reporting it.
             DispatchQueue.main.async { [weak self, weak collectionView] in
-                guard let self, let collectionView, collectionView.selectionIndexPaths.isEmpty,
-                      self.model.selection != nil else { return }
-                self.report(selection: nil)
+                guard let self, let collectionView else { return }
+                self.reportSelection(of: collectionView)
             }
         }
     }

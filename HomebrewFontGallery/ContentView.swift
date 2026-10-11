@@ -21,8 +21,8 @@ struct ContentView: View {
                 gallery
             }
             .inspector(isPresented: showingDetails) {
-                if let font = model.selectedFont {
-                    DetailsPane(model: model, font: font)
+                if !model.selection.isEmpty {
+                    DetailsPane(model: model)
                         // A set width, so the toolbar can leave exactly that much room above it.
                         .inspectorColumnWidth(Self.detailsWidth)
                         // A stretch of toolbar as wide as the pane holds the font's action in the
@@ -69,9 +69,9 @@ struct ContentView: View {
         .task {
             guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
             await model.load()
-            if model.selection == nil, !lastSelection.isEmpty {
+            if model.selection.isEmpty, !lastSelection.isEmpty {
                 WindowState.withoutAnimation {
-                    model.selection = lastSelection
+                    model.selection = [lastSelection]
                 }
             }
             // The window opens at the size it was left, pane included, so only later
@@ -99,21 +99,21 @@ struct ContentView: View {
                     } label: {
                         Label(window.detailsHidden ? "Show Details" : "Hide Details", systemImage: "sidebar.trailing")
                     }
-                    .disabled(model.selectedFont == nil)
-                    .help(window.detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
+                    .disabled(model.selection.isEmpty)
+                    .help(window.detailsHidden ? "Show details of the selection." : "Hide the details.")
                 }
             }
             .confirmationDialog(
-                "Uninstall “\(window.confirmingUninstall?.name ?? "")”?",
-                isPresented: Binding(get: { window.confirmingUninstall != nil }, set: { if !$0 { window.confirmingUninstall = nil } }),
+                uninstallTitle,
+                isPresented: Binding(get: { !window.confirmingUninstall.isEmpty }, set: { if !$0 { window.confirmingUninstall = [] } }),
                 presenting: window.confirmingUninstall
-            ) { font in
-                Button("Uninstall", role: .destructive) {
-                    model.uninstall(font)
+            ) { fonts in
+                Button(fonts.count == 1 ? "Uninstall" : "Uninstall \(fonts.count.formatted()) Fonts", role: .destructive) {
+                    model.uninstall(fonts)
                 }
                 Button("Cancel", role: .cancel) {}
-            } message: { font in
-                Text("Homebrew will remove \(Self.fileCount(font)) from your Fonts folder. Documents that use the font will show a different one until you install it again.")
+            } message: { fonts in
+                Text(Self.uninstallMessage(fonts))
             }
             .confirmationDialog(cancelTitle, isPresented: $window.confirmingCancel) {
                 Button(stopLabel, role: .destructive) {
@@ -127,15 +127,15 @@ struct ContentView: View {
             // keeps it wider, at 340 pt, which is two columns.
             .frame(minWidth: FontCollection.cardSide + 64, minHeight: 460)
             .onChange(of: model.selection) { _, selection in
-                if let selection {
-                    lastSelection = selection
-                    window.detailsHidden = false
+                if selection.count == 1, let token = selection.first {
+                    lastSelection = token
                 }
             }
     }
 
     /// The action is one width whatever its title, so the space beside it can be exact.
-    private static let actionWidth: CGFloat = 140
+    /// It fits "Uninstall 99 Fonts".
+    private static let actionWidth: CGFloat = 160
 
     /// Empty toolbar on each side of the action, which centres it over the pane.
     private var paneToolbarGap: some View {
@@ -166,10 +166,11 @@ struct ContentView: View {
         window.setFrame(frame, display: false)
     }
 
-    /// The details pane slides out whenever a font is selected, unless it has been hidden.
+    /// The details pane is out whenever fonts are selected, unless it has been hidden.
+    /// Once hidden it stays hidden, whatever is selected, until it is shown again.
     private var showingDetails: Binding<Bool> {
         Binding(
-            get: { model.selectedFont != nil && !window.detailsHidden },
+            get: { !model.selection.isEmpty && !window.detailsHidden },
             set: { window.detailsHidden = !$0 }
         )
     }
@@ -216,6 +217,23 @@ struct ContentView: View {
 
     // MARK: Confirmation text
 
+    private var uninstallTitle: String {
+        let fonts = window.confirmingUninstall
+        return fonts.count == 1 ? "Uninstall “\(fonts[0].name)”?" : "Uninstall \(fonts.count.formatted()) fonts?"
+    }
+
+    private static func uninstallMessage(_ fonts: [FontCask]) -> String {
+        let consequence = "Documents that use \(fonts.count == 1 ? "the font" : "them") will show a different font until you install \(fonts.count == 1 ? "it" : "them") again."
+        if fonts.count == 1 {
+            return "Homebrew will remove \(fileCount(fonts[0])) from your Fonts folder. \(consequence)"
+        }
+        // A few fonts are named. More than that are counted.
+        let names = fonts.count <= 4
+            ? ListFormatter.localizedString(byJoining: fonts.map { "“\($0.name)”" })
+            : "the \(fonts.count.formatted()) selected fonts"
+        return "Homebrew will remove \(names) from your Fonts folder, one after another. \(consequence)"
+    }
+
     private static func fileCount(_ font: FontCask) -> String {
         switch font.fontFiles.count {
         case 0: return "this font"
@@ -225,14 +243,20 @@ struct ContentView: View {
     }
 
     private var isInstalling: Bool { model.activity?.kind != .uninstalling }
+    private var isBatch: Bool { (model.activity?.total ?? 1) > 1 }
 
     private var cancelTitle: String {
-        let name = model.activity?.name ?? ""
-        return isInstalling ? "Stop installing “\(name)”?" : "Stop uninstalling “\(name)”?"
+        let subject = isBatch ? "the selected fonts" : "“\(model.activity?.name ?? "")”"
+        return isInstalling ? "Stop installing \(subject)?" : "Stop uninstalling \(subject)?"
     }
 
     private var cancelMessage: String {
-        isInstalling
+        if isBatch {
+            return isInstalling
+                ? "Homebrew will stop. Fonts it has already installed stay installed, and the rest won’t be installed."
+                : "Homebrew will stop. Fonts it has already removed stay removed, and the rest stay installed."
+        }
+        return isInstalling
             ? "Homebrew will stop, and the font won’t be installed. You can install it again later."
             : "Homebrew will stop. If it has already removed some of the font’s files, uninstall it again to remove the rest."
     }

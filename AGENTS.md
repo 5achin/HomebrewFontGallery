@@ -92,7 +92,13 @@ Guidelines: system controls, colours, fonts and spacing only, and no visible
   the grid, with the pane full height beside it; the All, Installed and Not
   Installed filters are rows in the sidebar, under All Fonts; the search field
   lives in the sidebar; while Homebrew works the action button shows a spinner
-  and stays in place (clicking it offers to stop), then fades to red.
+  and stays in place (clicking it offers to stop), then fades to red. When the
+  details pane is hidden, the same button sits in the toolbar beside the pane's
+  toggle, and the pane stays hidden until Sachin shows it again.
+- The grid allows multiple selection (Command-click, Shift-click). The button
+  then installs every selected font that isn't installed, one `brew` run after
+  another, and becomes Uninstall only when all of them are installed. The pane
+  shows a summary of the selection (`SelectionSummaryView`).
 - Search with `.searchable`. Filters for installed and not-installed fonts use a
   standard control, not custom chips.
 - The cask list loads by itself on launch. No refresh button.

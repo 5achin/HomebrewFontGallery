@@ -25,7 +25,7 @@ struct FontDetailView: View {
 
     var body: some View {
         Form {
-            if activity?.token == font.token || status?.token == font.token {
+            if activity?.token == font.token || status?.tokens == [font.token] {
                 Section {
                     statusRow
                 }

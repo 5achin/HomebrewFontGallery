@@ -29,6 +29,52 @@ final class GalleryModelTests: XCTestCase {
         XCTAssertEqual(GalleryModel.filter(fonts, by: .installed, searchText: "inter"), [])
     }
 
+    func testOneSelectedFontIsInstalledOrUninstalled() {
+        let install = GalleryModel.action(for: [fonts[1]])
+        XCTAssertEqual(install?.kind, .install)
+        XCTAssertEqual(install?.title, "Install")
+        XCTAssertEqual(install?.fonts.map(\.name), ["Inter"])
+        let uninstall = GalleryModel.action(for: [fonts[0]])
+        XCTAssertEqual(uninstall?.kind, .uninstall)
+        XCTAssertEqual(uninstall?.title, "Uninstall")
+        XCTAssertNil(GalleryModel.action(for: []))
+    }
+
+    func testSeveralSelectedFontsInstallTheOnesNotYetInstalled() {
+        let mixed = GalleryModel.action(for: fonts)
+        XCTAssertEqual(mixed?.kind, .install)
+        XCTAssertEqual(mixed?.fonts.map(\.name), ["Inter", "San Francisco Pro"])
+        XCTAssertEqual(mixed?.title, "Install 2 Fonts")
+        XCTAssertEqual(GalleryModel.action(for: [fonts[0], fonts[1]])?.title, "Install 1 Font")
+    }
+
+    func testSeveralInstalledFontsAreUninstalledTogether() {
+        let installed = [font("font-a", name: "A", installed: true), font("font-b", name: "B", installed: true)]
+        let action = GalleryModel.action(for: installed)
+        XCTAssertEqual(action?.kind, .uninstall)
+        XCTAssertEqual(action?.title, "Uninstall 2 Fonts")
+        XCTAssertEqual(action?.fonts, installed)
+    }
+
+    func testBatchStatusCountsWhatFinished() {
+        let done = GalleryModel.batchStatus(kind: .installing, batch: fonts, finished: fonts, failed: [], wasCancelled: false)
+        XCTAssertEqual(done.kind, .success)
+        XCTAssertEqual(done.title, "Installed 3 Fonts")
+        XCTAssertEqual(done.tokens, ["font-fira-code", "font-inter", "font-sf-pro"])
+
+        let partial = GalleryModel.batchStatus(kind: .installing, batch: fonts, finished: [fonts[0], fonts[2]],
+                                               failed: [fonts[1]], wasCancelled: false)
+        XCTAssertEqual(partial.kind, .failure)
+        XCTAssertEqual(partial.title, "Couldn’t Install 1 Font")
+        XCTAssertTrue(partial.message.hasPrefix("Installed 2 of 3 fonts. Homebrew reported a problem with “Inter”."))
+
+        let stopped = GalleryModel.batchStatus(kind: .uninstalling, batch: fonts, finished: [fonts[0]], failed: [],
+                                               wasCancelled: true)
+        XCTAssertEqual(stopped.kind, .cancelled)
+        XCTAssertEqual(stopped.title, "Uninstall Stopped")
+        XCTAssertEqual(stopped.message, "Uninstalled 1 of 3 fonts before stopping.")
+    }
+
     func testMissingBrewIsReportedWithoutRunningAnything() async {
         let service = BrewService(executable: nil)
         do {
