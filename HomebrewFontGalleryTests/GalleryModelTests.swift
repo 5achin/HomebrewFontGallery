@@ -4,7 +4,7 @@ import XCTest
 final class GalleryModelTests: XCTestCase {
     private func font(_ token: String, name: String, installed: Bool = false, alternateNames: [String] = []) -> FontCask {
         FontCask(token: token, name: name, alternateNames: alternateNames, summary: nil, homepage: nil, downloadURL: nil,
-                 sha256: nil, version: "1.0", installedVersion: installed ? "1.0" : nil, fontFiles: [],
+                 sha256: nil, version: "1.0", installedVersion: installed ? "1.0" : nil, fontFiles: [], sourceFiles: [], repositoryFolder: nil,
                  needsInstaller: false, isDeprecated: false, isDisabled: false)
     }
 

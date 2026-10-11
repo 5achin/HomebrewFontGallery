@@ -96,6 +96,22 @@ final class BrewParsingTests: XCTestCase {
         XCTAssertEqual(font.fontFiles.map(\.lastPathComponent), ["Abel-Regular.ttf"])
     }
 
+    func testFontFromAFolderOnGitHubCanBePreviewedBeforeInstalling() throws {
+        let font = try XCTUnwrap(fixtureFonts()["font-spline-sans-mono"])
+        XCTAssertEqual(font.repositoryFolder, FontCask.RepositoryFolder(branch: "main", path: "ofl/splinesansmono"))
+        XCTAssertEqual(font.sourceFiles, ["SplineSansMono-Italic[wght].ttf", "SplineSansMono[wght].ttf"])
+        XCTAssertEqual(font.previewDownloadURL?.absoluteString,
+                       "https://github.com/google/fonts/raw/main/ofl/splinesansmono/SplineSansMono%5Bwght%5D.ttf")
+    }
+
+    func testRepresentativeFilePrefersRegularThenUpright() {
+        XCTAssertEqual(FontCask.representativeFile(in: ["A-Bold.ttf", "A-Regular.ttf"]), "A-Regular.ttf")
+        XCTAssertEqual(FontCask.representativeFile(in: ["A-Italic[wght].ttf", "A[wght].ttf"]), "A[wght].ttf")
+        XCTAssertEqual(FontCask.representativeFile(in: ["A-Italic.otf"]), "A-Italic.otf")
+        XCTAssertNil(FontCask.representativeFile(in: ["README.md"]))
+        XCTAssertNil(FontCask.representativeFile(in: []))
+    }
+
     func testFontWithInstallerPackageIsNotInstallable() throws {
         let font = try XCTUnwrap(fixtureFonts()["font-sf-pro"])
         XCTAssertEqual(font.name, "San Francisco Pro")

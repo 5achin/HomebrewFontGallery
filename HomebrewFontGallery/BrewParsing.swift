@@ -56,6 +56,7 @@ enum BrewParsing {
         let desc: String?
         let homepage: String?
         let url: String?
+        let urlSpecs: URLSpecs?
         let sha256: String?
         let version: String?
         let installed: String?
@@ -63,9 +64,15 @@ enum BrewParsing {
         let deprecated: Bool?
         let disabled: Bool?
 
+        private enum CodingKeys: String, CodingKey {
+            case token, name, desc, homepage, url, sha256, version, installed, artifacts, deprecated, disabled
+            case urlSpecs = "url_specs"
+        }
+
         var font: FontCask {
             let names = (name ?? []).filter { !$0.isEmpty }
             let artifacts = artifacts ?? []
+            let fonts = artifacts.filter { $0.fontTarget != nil && $0.fontSource != nil }
             return FontCask(
                 token: token,
                 name: names.first ?? BrewParsing.displayName(fromToken: token),
@@ -76,7 +83,9 @@ enum BrewParsing {
                 sha256: sha256.flatMap { BrewParsing.isSHA256($0) ? $0.lowercased() : nil },
                 version: version ?? "",
                 installedVersion: installed.flatMap { $0.isEmpty ? nil : $0 },
-                fontFiles: artifacts.compactMap(\.fontTarget).map { URL(fileURLWithPath: $0) },
+                fontFiles: fonts.compactMap(\.fontTarget).map { URL(fileURLWithPath: $0) },
+                sourceFiles: fonts.compactMap(\.fontSource),
+                repositoryFolder: urlSpecs?.repositoryFolder,
                 needsInstaller: artifacts.contains { $0.isInstallerPackage },
                 isDeprecated: deprecated ?? false,
                 isDisabled: disabled ?? false
@@ -84,8 +93,29 @@ enum BrewParsing {
         }
     }
 
+    /// Extra details about the download. Only a git branch and folder matter here.
+    private struct URLSpecs: Decodable {
+        let repositoryFolder: FontCask.RepositoryFolder?
+
+        private enum CodingKeys: String, CodingKey {
+            case branch
+            case onlyPath = "only_path"
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try? decoder.container(keyedBy: CodingKeys.self)
+            if let branch = try? container?.decode(String.self, forKey: .branch),
+               let path = try? container?.decode(String.self, forKey: .onlyPath) {
+                repositoryFolder = FontCask.RepositoryFolder(branch: branch, path: path)
+            } else {
+                repositoryFolder = nil
+            }
+        }
+    }
+
     /// Artifacts come in several shapes. Only font files and installer packages matter here.
     private struct Artifact: Decodable {
+        let fontSource: String?
         let fontTarget: String?
         let isInstallerPackage: Bool
 
@@ -96,6 +126,7 @@ enum BrewParsing {
         init(from decoder: Decoder) throws {
             let container = try? decoder.container(keyedBy: CodingKeys.self)
             let isFont = container?.contains(.font) ?? false
+            fontSource = isFont ? (try? container?.decode([String].self, forKey: .font))?.first : nil
             fontTarget = isFont ? (try? container?.decode(String.self, forKey: .target)) : nil
             isInstallerPackage = container?.contains(.pkg) ?? false
         }
