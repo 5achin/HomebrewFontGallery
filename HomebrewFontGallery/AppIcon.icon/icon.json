@@ -1,15 +1,15 @@
 {
   "fill" : {
     "linear-gradient" : [
-      "display-p3:1.00,0.70,0.22,1.00",
-      "display-p3:0.94,0.42,0.07,1.00"
+      "display-p3:0.93,0.33,0.26,1.00",
+      "display-p3:0.66,0.12,0.14,1.00"
     ]
   },
   "groups" : [
     {
       "layers" : [
         {
-          "glass" : false,
+          "glass" : true,
           "image-name" : "letters.svg",
           "name" : "letters"
         }
@@ -38,8 +38,8 @@
       },
       "specular" : true,
       "translucency" : {
-        "enabled" : false,
-        "value" : 0.5
+        "enabled" : true,
+        "value" : 0.3
       }
     },
     {
@@ -48,7 +48,7 @@
           "glass" : true,
           "image-name" : "cards-behind.svg",
           "name" : "cards behind",
-          "opacity" : 0.4
+          "opacity" : 0.45
         }
       ],
       "shadow" : {
@@ -57,8 +57,8 @@
       },
       "specular" : true,
       "translucency" : {
-        "enabled" : false,
-        "value" : 0.5
+        "enabled" : true,
+        "value" : 0.6
       }
     }
   ],
