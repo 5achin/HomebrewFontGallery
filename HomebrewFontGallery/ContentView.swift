@@ -95,7 +95,7 @@ struct ContentView: View {
             }
             .frame(minWidth: 760, minHeight: 460)
             .task {
-                guard !AppDelegate.isRunningTests else { return }
+                guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
                 await model.load()
                 if model.selection == nil, !lastSelection.isEmpty {
                     model.selection = lastSelection

@@ -38,6 +38,15 @@ directly: Homebrew owns every install and uninstall.
   two or three layers on a gradient. No baked-in glass, shadow or mask, and
   nothing 3D or illustrative. Show it at the top of the README.
 
+## Thumbnails
+
+- The grid's thumbnails ship inside the app, in `HomebrewFontGallery/Thumbnails.bundle`,
+  one PNG per font named by its Homebrew token. The app only draws a thumbnail
+  itself for a font that isn't in that folder.
+- Run `scripts/update-thumbnails.sh` to redraw them, then commit the changed
+  pictures. Do it after changing how a thumbnail is drawn or its size, and now
+  and then to pick up fonts Homebrew has added.
+
 ## Running brew
 
 - `BrewService` is the only type that runs external commands. It launches `brew`

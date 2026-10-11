@@ -80,7 +80,8 @@ Every push to `main` runs the tests, builds the app with GitHub Actions and publ
 - **`BrewService`** is the only place that runs external commands. It launches `brew` directly with `Process`, with no shell or wrapper script, and parses its JSON output into model types. The parsing is covered by unit tests.
 - Every command is logged to `~/Library/Logs/HomebrewFontGallery/HomebrewFontGallery.log`.
 
-- Thumbnails are drawn once and saved as small pictures in `~/Library/Caches/com.sachinkharady.HomebrewFontGallery/Thumbnails`. To draw one for a font that isn't installed, the app downloads the font file, saves the picture and deletes the download. The details pane downloads the selected font again and keeps only that one.
+- Thumbnails for about 2,000 fonts ship inside the app, in `HomebrewFontGallery/Thumbnails.bundle`, so the grid fills in without downloading anything. `scripts/update-thumbnails.sh` redraws them from the fonts Homebrew offers today.
+- A font Homebrew has added since then gets its thumbnail drawn on your Mac: the app downloads the font file, saves a small picture in `~/Library/Caches/com.sachinkharady.HomebrewFontGallery/Thumbnails` and deletes the download. The details pane downloads the selected font again and keeps only that one.
 
 Font casks install into your own `~/Library/Fonts`, so the app never asks for an administrator password.
 

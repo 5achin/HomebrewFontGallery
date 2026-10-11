@@ -24,6 +24,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let directory = ThumbnailExport.directory {
+            ThumbnailExport.run(to: directory)
+            return
+        }
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"

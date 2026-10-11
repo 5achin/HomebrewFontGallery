@@ -81,6 +81,16 @@ actor FontThumbnails {
         }
     }
 
+    /// The thumbnails that ship inside the app, one picture per font, named by the font's token.
+    /// `scripts/update-thumbnails.sh` fills this folder, so only fonts Homebrew has added since
+    /// need their thumbnail drawn on this Mac.
+    static let bundledDirectory = Bundle.main.url(forResource: "Thumbnails", withExtension: "bundle")
+
+    static func bundledPNG(for font: FontCask) -> Data? {
+        guard let bundledDirectory else { return nil }
+        return try? Data(contentsOf: bundledDirectory.appendingPathComponent("\(font.token).png"))
+    }
+
     private let images: NSCache<NSString, NSImage> = {
         let cache = NSCache<NSString, NSImage>()
         cache.countLimit = 500
@@ -88,7 +98,7 @@ actor FontThumbnails {
     }()
     /// Fonts with no file to show, or whose file couldn't be fetched or read, since the app opened.
     private var unavailable = Set<String>()
-    private let downloads = Limiter(limit: 4)
+    private let downloads = Limiter(limit: 6)
 
     /// The font's thumbnail, or nil when the font can only be seen after installing it.
     func thumbnail(for font: FontCask) async -> NSImage? {
@@ -98,6 +108,11 @@ actor FontThumbnails {
         }
         let file = FontThumbnails.directory.appendingPathComponent(name)
         if let data = try? Data(contentsOf: file), let image = FontThumbnailRenderer.image(fromPNG: data) {
+            images.setObject(image, forKey: name as NSString)
+            return image
+        }
+        // A thumbnail that shipped with the app saves downloading the font at all.
+        if let data = FontThumbnails.bundledPNG(for: font), let image = FontThumbnailRenderer.image(fromPNG: data) {
             images.setObject(image, forKey: name as NSString)
             return image
         }
@@ -118,7 +133,7 @@ actor FontThumbnails {
     }
 
     /// Draws the thumbnail from the installed font, or from a download that is then deleted.
-    private func render(_ font: FontCask) async -> Data? {
+    func render(_ font: FontCask) async -> Data? {
         if font.isInstalled, let name = FontCask.representativeFile(in: font.fontFiles.map(\.lastPathComponent)),
            let file = font.fontFiles.first(where: { $0.lastPathComponent == name }),
            let face = FontPreview.faces(in: [file]).first {
