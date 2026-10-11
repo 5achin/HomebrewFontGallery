@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/app-icon.png" alt="The Homebrew Font Gallery app icon" width="128">
+  <img src="docs/app-icon.png" alt="The Homebrew Fonts Gallery app icon" width="128">
 </p>
 
-<h1 align="center">Homebrew Font Gallery</h1>
+<h1 align="center">Homebrew Fonts Gallery</h1>
 
 A native Mac app for browsing, previewing and installing the fonts Homebrew offers.
 
-<p align="center"><img src="docs/main-window.png" alt="The Homebrew Font Gallery window: a grid of font thumbnails, with the selected font's preview and details beside it" width="1100"></p>
+<p align="center"><img src="docs/main-window.png" alt="The Homebrew Fonts Gallery window: a grid of font thumbnails, with the selected font's preview and details beside it" width="1100"></p>
 
 ## What it does
 
@@ -26,16 +26,16 @@ The app never touches `~/Library/Fonts` directly. Homebrew owns every install an
 ## Install
 
 1. Download the latest `HomebrewFontGallery-….zip` from the [Releases page](https://github.com/5achin/HomebrewFontGallery/releases/latest).
-2. Unzip it and drag **Homebrew Font Gallery** into your Applications folder.
+2. Unzip it and drag **Homebrew Fonts Gallery** into your Applications folder.
 3. Open it.
 
 ### The first time you open it
 
-Homebrew Font Gallery is not signed with an Apple Developer ID, so macOS blocks it the first time with a message that it could not be verified. To allow it:
+Homebrew Fonts Gallery is not signed with an Apple Developer ID, so macOS blocks it the first time with a message that it could not be verified. To allow it:
 
 1. Try to open the app once, then dismiss the warning.
 2. Open **System Settings › Privacy & Security**.
-3. Scroll down to the message about Homebrew Font Gallery and click **Open Anyway**.
+3. Scroll down to the message about Homebrew Fonts Gallery and click **Open Anyway**.
 4. Confirm with your password or Touch ID.
 
 You only need to do this once.
@@ -70,7 +70,7 @@ cd HomebrewFontGallery
 scripts/build.sh --open
 ```
 
-You need a recent Xcode. The app is written to `build/Release/Homebrew Font Gallery.app`. Add `--test` to run the unit tests first, and `--zip` to also produce `build/Release/HomebrewFontGallery.zip`. You can also open `HomebrewFontGallery.xcodeproj` in Xcode and press Run.
+You need a recent Xcode. The app is written to `build/Release/Homebrew Fonts Gallery.app`. Add `--test` to run the unit tests first, and `--zip` to also produce `build/Release/HomebrewFontGallery.zip`. You can also open `HomebrewFontGallery.xcodeproj` in Xcode and press Run.
 
 Every push to `main` runs the tests, builds the app with GitHub Actions and publishes it as a new release. Pushing a tag like `v1.0` publishes a release under that tag instead.
 

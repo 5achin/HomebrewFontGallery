@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds a Release "Homebrew Font Gallery.app" into build/Release (git-ignored).
+# Builds a Release "Homebrew Fonts Gallery.app" into build/Release (git-ignored).
 #
 #   scripts/build.sh          build the app
 #   scripts/build.sh --test   run the unit tests first, and stop if they fail
@@ -13,7 +13,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 SCHEME="HomebrewFontGallery"
-APP_NAME="Homebrew Font Gallery"
+APP_NAME="Homebrew Fonts Gallery"
 DERIVED_DATA="build/DerivedData"
 OUT_DIR="build/Release"
 APP="$OUT_DIR/$APP_NAME.app"

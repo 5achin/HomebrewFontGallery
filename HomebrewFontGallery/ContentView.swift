@@ -47,7 +47,7 @@ struct ContentView: View {
                         .inspectorColumnWidth(min: 340, ideal: 400, max: 560)
                 }
             }
-            .navigationTitle("Homebrew Font Gallery")
+            .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
             .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search Fonts")
             .toolbar {
@@ -135,7 +135,7 @@ struct ContentView: View {
             ContentUnavailableView {
                 Label("Homebrew Isn’t Installed", systemImage: "shippingbox")
             } description: {
-                Text("Homebrew Font Gallery uses Homebrew to find and install fonts. Install Homebrew, then try again.")
+                Text("Homebrew Fonts Gallery uses Homebrew to find and install fonts. Install Homebrew, then try again.")
             } actions: {
                 Link("Get Homebrew", destination: URL(string: "https://brew.sh")!)
                 Button("Try Again") {

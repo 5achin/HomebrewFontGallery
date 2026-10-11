@@ -1,4 +1,4 @@
-# Homebrew Font Gallery: notes for agents
+# Homebrew Fonts Gallery: notes for agents
 
 Sachin's rules for every Mac app live in `~/Developer/AGENTS.md` on his Mac, with
 [DiskFlasher](https://github.com/5achin/DiskFlasher) as the reference
@@ -59,7 +59,7 @@ Follow the Design section of `~/Developer/AGENTS.md` and Apple's Human Interface
 Guidelines: system controls, colours, fonts and spacing only, and no visible
 `brew` commands in the interface. Points specific to this app:
 
-- One `Window` scene, titled "Homebrew Font Gallery", that quits when closed.
+- One `Window` scene, titled "Homebrew Fonts Gallery", that quits when closed.
   Unlike DiskFlasher, a gallery of hundreds of fonts needs a resizable window
   and a scrolling list, so the size-to-content rule doesn't apply to the font
   list. Sheets, settings and detail panes still follow it.
