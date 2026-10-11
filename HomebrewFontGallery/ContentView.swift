@@ -91,6 +91,12 @@ struct ContentView: View {
             .navigationTitle("Homebrew Fonts Gallery")
             .navigationSubtitle(subtitle)
             .toolbar {
+                // With the details pane out of the way, the font's action moves up here.
+                if !showingDetails.wrappedValue {
+                    ToolbarItem {
+                        FontActionButton(model: model, window: window)
+                    }
+                }
                 ToolbarItem {
                     Button {
                         WindowState.withoutAnimation {
