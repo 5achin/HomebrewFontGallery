@@ -40,6 +40,12 @@ struct FontCollection: NSViewRepresentable {
         collectionView.onCancel = { [weak coordinator = context.coordinator] in
             coordinator?.report(selection: [])
         }
+        collectionView.onDoubleClick = { [window] in
+            guard window.detailsHidden else { return }
+            WindowState.withoutAnimation {
+                window.detailsHidden = false
+            }
+        }
 
         let scrollView = NSScrollView()
         scrollView.documentView = collectionView
@@ -219,9 +225,19 @@ struct FontCollection: NSViewRepresentable {
     }
 }
 
-/// A collection view that clears its selection when Escape is pressed.
+/// A collection view that clears its selection when Escape is pressed, and says when a
+/// card is double-clicked.
 private final class FontCollectionView: NSCollectionView {
     var onCancel: (() -> Void)?
+    var onDoubleClick: (() -> Void)?
+
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
+        // A plain double-click on a card, not one that is adding to the selection.
+        guard event.clickCount == 2, event.modifierFlags.isDisjoint(with: [.command, .shift]),
+              indexPathForItem(at: convert(event.locationInWindow, from: nil)) != nil else { return }
+        onDoubleClick?()
+    }
 
     override func cancelOperation(_ sender: Any?) {
         deselectAll(nil)
