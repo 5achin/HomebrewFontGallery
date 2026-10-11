@@ -1,10 +1,10 @@
 import Foundation
 
-/// A group of fonts that share a word in their names, such as "Sans" or "Mono".
+/// A group of fonts whose names end in the same word, such as "Sans" or "Mono".
 struct FontCategory: Identifiable, Hashable {
     /// The word as most fonts write it.
     let word: String
-    /// How many fonts have the word anywhere in their name.
+    /// How many fonts' names end in the word.
     let count: Int
 
     var id: String { word.lowercased() }
@@ -21,19 +21,15 @@ struct FontCategory: Identifiable, Hashable {
         return endings
             .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
             .prefix(limit)
-            .map { key, _ in
+            .map { key, count in
                 let word = spellings[key]?.max { $0.value != $1.value ? $0.value < $1.value : $0.key > $1.key }?.key ?? key
-                return FontCategory(word: word, count: fonts.filter { contains($0, word: key) }.count)
+                return FontCategory(word: word, count: count)
             }
     }
 
+    /// True when the font's name ends in the category's word, whatever its case.
     func contains(_ font: FontCask) -> Bool {
-        FontCategory.contains(font, word: id)
-    }
-
-    /// True when the word is one of the words of the font's name, whatever its case.
-    private static func contains(_ font: FontCask, word: String) -> Bool {
-        words(in: font.name).contains { $0.lowercased() == word }
+        FontCategory.words(in: font.name).last?.lowercased() == id
     }
 
     /// "Literation Nerd Font (Liberation Mono)" becomes its five words, without the brackets.

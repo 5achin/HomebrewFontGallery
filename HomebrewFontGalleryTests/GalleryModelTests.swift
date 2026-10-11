@@ -63,13 +63,18 @@ final class FontCategoryTests: XCTestCase {
         XCTAssertEqual(categories.map(\.word), ["Mono", "Sans"])
     }
 
-    func testCategoryCountsAndFiltersByTheWordAnywhereInTheName() {
-        let sans = try? XCTUnwrap(FontCategory.top(2, in: fonts).last)
-        XCTAssertEqual(sans?.count, 4)
+    func testCategoryCountsAndFiltersByTheLastWordOfTheName() {
+        let categories = FontCategory.top(2, in: fonts)
+        let mono = categories.first
+        XCTAssertEqual(mono?.count, 3)
+        XCTAssertEqual(GalleryModel.filter(fonts, by: .all, searchText: "", category: mono).map(\.name),
+                       ["Fira Mono", "Agave Nerd Font (Agave MONO)", "Roboto Mono"])
+        // "Noto Sans JP" and "Noto Sans 2" have the word, but don't end in it.
+        let sans = categories.last
+        XCTAssertEqual(sans?.count, 2)
         XCTAssertEqual(GalleryModel.filter(fonts, by: .all, searchText: "", category: sans).map(\.name),
-                       ["Fira Sans", "Open Sans", "Noto Sans JP", "Noto Sans 2"])
-        XCTAssertEqual(GalleryModel.filter(fonts, by: .all, searchText: "noto", category: sans).map(\.name),
-                       ["Noto Sans JP", "Noto Sans 2"])
+                       ["Fira Sans", "Open Sans"])
+        XCTAssertEqual(GalleryModel.filter(fonts, by: .all, searchText: "open", category: sans).map(\.name), ["Open Sans"])
     }
 
     func testLimitAndEmptyInput() {
