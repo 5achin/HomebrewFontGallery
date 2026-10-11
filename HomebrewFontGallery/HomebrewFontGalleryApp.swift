@@ -1,0 +1,40 @@
+import SwiftUI
+
+@main
+struct HomebrewFontGalleryApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
+    var body: some Scene {
+        Window("Homebrew Font Gallery", id: "main") {
+            ContentView()
+        }
+        .defaultSize(width: 900, height: 600)
+        .commands {
+            CommandGroup(after: .help) {
+                Button("Show Logs in Finder") {
+                    NSWorkspace.shared.activateFileViewerSelecting([RunLog.fileURL])
+                }
+            }
+        }
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// True while the unit tests are using the app as their host, when it should stay idle.
+    static let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        RunLog.write("=== Homebrew Font Gallery \(version) (\(build)) launched from \(Bundle.main.bundlePath), macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        RunLog.write("Quit")
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
+    }
+}

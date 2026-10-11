@@ -1,0 +1,586 @@
+{
+  "formulae": [],
+  "casks": [
+    {
+      "token": "font-abel",
+      "full_token": "font-abel",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Abel"
+      ],
+      "desc": null,
+      "homepage": "https://fonts.google.com/specimen/Abel",
+      "url": "https://github.com/google/fonts/raw/main/ofl/abel/Abel-Regular.ttf",
+      "url_specs": {},
+      "version": "latest",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "no_check",
+      "artifacts": [
+        {
+          "font": [
+            "Abel-Regular.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/Abel-Regular.ttf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-a/font-abel.rb",
+      "ruby_source_checksum": {
+        "sha256": "6ce209de2279fa83edf308a7ce8c1d4b17bf9d77a4408cffe03403b9aa399be3"
+      }
+    },
+    {
+      "token": "font-andagii",
+      "full_token": "font-andagii",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Andagii"
+      ],
+      "desc": null,
+      "homepage": "http://www.i18nguy.com/unicode/unicode-font.html",
+      "url": "http://www.i18nguy.com/unicode/andagii.zip",
+      "url_specs": {
+        "user_agent": ":browser"
+      },
+      "version": "latest",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "no_check",
+      "artifacts": [
+        {
+          "font": [
+            "ANDAGII_.TTF"
+          ],
+          "target": "/Users/me/Library/Fonts/ANDAGII_.TTF"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": true,
+      "disable_date": "2025-12-23",
+      "disable_reason": "no_longer_meets_criteria",
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": {
+        "date": "2025-12-23",
+        "because": "no_longer_meets_criteria",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-a/font-andagii.rb",
+      "ruby_source_checksum": {
+        "sha256": "d463b626447497cd87988548a1dc2bb58e5e0185cfcc44f385bc401ce7307f2b"
+      }
+    },
+    {
+      "token": "font-ark-pixel-16px-monospaced",
+      "full_token": "font-ark-pixel-16px-monospaced",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Ark Pixel 16px Monospaced"
+      ],
+      "desc": null,
+      "homepage": "https://github.com/TakWolf/ark-pixel-font",
+      "url": "https://github.com/TakWolf/ark-pixel-font/releases/download/2026.09.01/ark-pixel-font-16px-monospaced-otf-v2026.09.01.zip",
+      "url_specs": {},
+      "version": "2026.09.01",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "3b6ac7a9a44f202207603390cbc78cb5a7d18c10c126b4cae5b0be9235eceaaf",
+      "artifacts": [
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-ja.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-ja.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-ko.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-ko.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-latin.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-latin.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-zh_cn.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-zh_cn.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-zh_hk.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-zh_hk.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-zh_tr.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-zh_tr.otf"
+        },
+        {
+          "font": [
+            "ark-pixel-16px-monospaced-zh_tw.otf"
+          ],
+          "target": "/Users/me/Library/Fonts/ark-pixel-16px-monospaced-zh_tw.otf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": true,
+      "deprecation_date": "2026-09-26",
+      "deprecation_reason": "discontinued",
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": {
+        "date": "2026-09-26",
+        "because": "discontinued",
+        "replacement_formula": null,
+        "replacement_cask": null
+      },
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-a/font-ark-pixel-16px-monospaced.rb",
+      "ruby_source_checksum": {
+        "sha256": "b38b3dd766c15e32c0e4a6cfe6350d57d5712d2b6d997c76067b9eb02586cd26"
+      }
+    },
+    {
+      "token": "font-chenyuluoyan",
+      "full_token": "font-chenyuluoyan",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Chenyuluoyan",
+        "\u8fb0\u5b87\u843d\u96c1\u9ad4"
+      ],
+      "desc": null,
+      "homepage": "https://github.com/Chenyu-otf/chenyuluoyan_thin",
+      "url": "https://github.com/Chenyu-otf/chenyuluoyan_thin/archive/refs/heads/main.tar.gz",
+      "url_specs": {},
+      "version": "latest",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "no_check",
+      "artifacts": [
+        {
+          "font": [
+            "chenyuluoyan_thin-main/ChenYuluoyan-2.0-Thin.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/ChenYuluoyan-2.0-Thin.ttf"
+        },
+        {
+          "font": [
+            "chenyuluoyan_thin-main/ChenYuluoyan-Thin-Monospaced.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/ChenYuluoyan-Thin-Monospaced.ttf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-c/font-chenyuluoyan.rb",
+      "ruby_source_checksum": {
+        "sha256": "8e2df667c46f68d24dfe23e45b48513e88d398b780f4d26c9809aceebf072f1d"
+      }
+    },
+    {
+      "token": "font-fira-code",
+      "full_token": "font-fira-code",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Fira Code"
+      ],
+      "desc": null,
+      "homepage": "https://github.com/tonsky/FiraCode",
+      "url": "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip",
+      "url_specs": {},
+      "version": "6.2",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "0949915ba8eb24d89fd93d10a7ff623f42830d7c5ffc3ecbf960e4ecad3e3e79",
+      "artifacts": [
+        {
+          "font": [
+            "ttf/FiraCode-Bold.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-Bold.ttf"
+        },
+        {
+          "font": [
+            "ttf/FiraCode-Light.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-Light.ttf"
+        },
+        {
+          "font": [
+            "ttf/FiraCode-Medium.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-Medium.ttf"
+        },
+        {
+          "font": [
+            "ttf/FiraCode-Regular.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-Regular.ttf"
+        },
+        {
+          "font": [
+            "ttf/FiraCode-Retina.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-Retina.ttf"
+        },
+        {
+          "font": [
+            "ttf/FiraCode-SemiBold.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-SemiBold.ttf"
+        },
+        {
+          "font": [
+            "variable_ttf/FiraCode-VF.ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/FiraCode-VF.ttf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-f/font-fira-code.rb",
+      "ruby_source_checksum": {
+        "sha256": "b63701ef6669d3bb02f5aa6832bd48e4a8a0902a616f0eaf26c83cfccf609140"
+      }
+    },
+    {
+      "token": "font-maple-mono",
+      "full_token": "font-maple-mono",
+      "old_tokens": [
+        "font-maple"
+      ],
+      "tap": "homebrew/cask",
+      "name": [
+        "Maple Mono"
+      ],
+      "desc": null,
+      "homepage": "https://font.subf.dev/en/",
+      "url": "https://github.com/subframe7536/Maple-font/releases/download/v7.9/MapleMono-Variable.zip",
+      "url_specs": {},
+      "version": "7.9",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": "7.9",
+      "installed_time": 1790587179,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "b9e57677cc4ec069ce178bd965d66cd14bd26c12e37d89d786ff959339bf8c93",
+      "artifacts": [
+        {
+          "font": [
+            "MapleMono-Italic[wght].ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/MapleMono-Italic[wght].ttf"
+        },
+        {
+          "font": [
+            "MapleMono[wght].ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/MapleMono[wght].ttf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-m/font-maple-mono.rb",
+      "ruby_source_checksum": {
+        "sha256": "3307f57d8576fd5df3602d546d771ff05086cf498f31e78672d28c778fd57fe0"
+      }
+    },
+    {
+      "token": "font-sf-pro",
+      "full_token": "font-sf-pro",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "San Francisco Pro",
+        "SF Pro"
+      ],
+      "desc": null,
+      "homepage": "https://developer.apple.com/fonts/",
+      "url": "https://devimages-cdn.apple.com/design/resources/download/SF-Pro.dmg",
+      "url_specs": {},
+      "version": "latest",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": null,
+      "installed_time": null,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "no_check",
+      "artifacts": [
+        {
+          "uninstall": [
+            {
+              "pkgutil": "com.apple.pkg.SFProFonts"
+            }
+          ]
+        },
+        {
+          "pkg": [
+            "SFProFonts.pkg"
+          ]
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {
+        "macos": {}
+      },
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-s/font-sf-pro.rb",
+      "ruby_source_checksum": {
+        "sha256": "a067e64919d57652cb1acfbceef0b78f9a5354761fec5595de3d78012248fdd4"
+      }
+    },
+    {
+      "token": "font-spline-sans-mono",
+      "full_token": "font-spline-sans-mono",
+      "old_tokens": [],
+      "tap": "homebrew/cask",
+      "name": [
+        "Spline Sans Mono"
+      ],
+      "desc": null,
+      "homepage": "https://fonts.google.com/specimen/Spline+Sans+Mono",
+      "url": "https://github.com/google/fonts.git",
+      "url_specs": {
+        "branch": "main",
+        "only_path": "ofl/splinesansmono"
+      },
+      "version": "latest",
+      "autobump": true,
+      "no_autobump_message": null,
+      "skip_livecheck": false,
+      "installed": "latest",
+      "installed_time": 1790588766,
+      "bundle_version": null,
+      "bundle_short_version": null,
+      "pinned": false,
+      "pinned_version": null,
+      "outdated": false,
+      "sha256": "no_check",
+      "artifacts": [
+        {
+          "font": [
+            "SplineSansMono-Italic[wght].ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/SplineSansMono-Italic[wght].ttf"
+        },
+        {
+          "font": [
+            "SplineSansMono[wght].ttf"
+          ],
+          "target": "/Users/me/Library/Fonts/SplineSansMono[wght].ttf"
+        }
+      ],
+      "caveats": null,
+      "caveats_rosetta": null,
+      "depends_on": {},
+      "conflicts_with": null,
+      "container": null,
+      "rename": [],
+      "auto_updates": null,
+      "deprecated": false,
+      "deprecation_date": null,
+      "deprecation_reason": null,
+      "deprecation_replacement_formula": null,
+      "deprecation_replacement_cask": null,
+      "deprecate_args": null,
+      "disabled": false,
+      "disable_date": null,
+      "disable_reason": null,
+      "disable_replacement_formula": null,
+      "disable_replacement_cask": null,
+      "disable_args": null,
+      "tap_git_head": "e43da2b9236d19e4ac6806e7d8cc947cc7838b35",
+      "languages": [],
+      "ruby_source_path": "Casks/font/font-s/font-spline-sans-mono.rb",
+      "ruby_source_checksum": {
+        "sha256": "1948834487371de8bb7266563b70833d7656e2b6d44ab5774e114453b8068abe"
+      }
+    }
+  ]
+}
