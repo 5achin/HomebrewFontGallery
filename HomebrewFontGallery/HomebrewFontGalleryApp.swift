@@ -27,10 +27,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
+        if !AppDelegate.isRunningTests {
+            FontPreview.removeDownloads()
+        }
         RunLog.write("=== Homebrew Font Gallery \(version) (\(build)) launched from \(Bundle.main.bundlePath), macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        FontPreview.removeDownloads()
         RunLog.write("Quit")
     }
 

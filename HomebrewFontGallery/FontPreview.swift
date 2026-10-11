@@ -24,7 +24,8 @@ enum FontPreviewError: Error {
 }
 
 /// Reads font files for previewing. Nothing here installs or registers a font:
-/// the files are only read, either where Homebrew installed them or from the app's cache.
+/// the files are only read, either where Homebrew installed them or from a download
+/// that is deleted again once it has been shown.
 enum FontPreview {
     static let maximumDownloadSize = 50 << 20
 
@@ -60,14 +61,37 @@ enum FontPreview {
         return style == "Regular" ? 0 : 1
     }
 
-    /// The font file to preview a font that isn't installed, downloading it once into the cache.
-    static func downloadedFile(for font: FontCask) async throws -> URL {
+    /// The font file for the details pane to preview a font that isn't installed.
+    /// Only this one downloaded font is kept: showing another font removes it.
+    static func detailsFile(for font: FontCask) async throws -> URL {
         guard let source = font.previewDownloadURL else { throw FontPreviewError.downloadFailed }
-        let cached = cacheDirectory.appendingPathComponent("\(font.token)-\(cacheKey(for: font)).\(source.pathExtension.lowercased())")
-        if FileManager.default.fileExists(atPath: cached.path) {
-            return cached
+        let kept = cacheDirectory.appendingPathComponent("\(font.token)-\(cacheKey(for: font)).\(source.pathExtension.lowercased())")
+        removeDownloads(except: kept)
+        if FileManager.default.fileExists(atPath: kept.path) {
+            return kept
         }
+        let downloaded = try await download(font)
+        defer { try? FileManager.default.removeItem(at: downloaded) }
+        try Task.checkCancellation()
+        // Another font may have been shown, and its file kept, while this one was downloading.
+        removeDownloads(except: kept)
+        try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: downloaded, to: kept)
+        return kept
+    }
 
+    /// Deletes the fonts downloaded for the details pane, apart from the one given.
+    static func removeDownloads(except kept: URL? = nil) {
+        let files = (try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil)) ?? []
+        for file in files where file.lastPathComponent != kept?.lastPathComponent {
+            try? FileManager.default.removeItem(at: file)
+        }
+    }
+
+    /// Downloads a font's preview file to a temporary place and checks it.
+    /// The caller deletes the file when it has finished with it.
+    static func download(_ font: FontCask) async throws -> URL {
+        guard let source = font.previewDownloadURL else { throw FontPreviewError.downloadFailed }
         RunLog.write("Download preview for \(font.token): \(source.absoluteString)")
         let downloaded: URL
         let response: URLResponse
@@ -98,14 +122,15 @@ enum FontPreview {
                 throw FontPreviewError.checksumMismatch
             }
         }
-        try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-        try? FileManager.default.removeItem(at: cached)
-        try FileManager.default.copyItem(at: downloaded, to: cached)
-        return cached
+        // Core Text reads the kind of font from the file's extension, which the download lacks.
+        let file = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(UUID().uuidString).\(source.pathExtension.lowercased())")
+        try FileManager.default.copyItem(at: downloaded, to: file)
+        return file
     }
 
     /// Changes when the font's version does, so a new version is downloaded again.
-    private static func cacheKey(for font: FontCask) -> String {
+    static func cacheKey(for font: FontCask) -> String {
         let digest = SHA256.hash(data: Data("\(font.version) \(font.downloadURL?.absoluteString ?? "")".utf8))
         return digest.prefix(6).map { String(format: "%02x", $0) }.joined()
     }

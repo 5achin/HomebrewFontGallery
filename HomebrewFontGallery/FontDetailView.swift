@@ -226,7 +226,7 @@ struct FontDetailView: View {
             return
         }
         do {
-            let file = try await FontPreview.downloadedFile(for: font)
+            let file = try await FontPreview.detailsFile(for: font)
             let faces = await Task.detached { FontPreview.faces(in: [file]) }.value
             guard !Task.isCancelled else { return }
             if faces.isEmpty {

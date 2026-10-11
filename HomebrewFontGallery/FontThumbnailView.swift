@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// One cell of the grid: "Aa" set in the font, with the font's name below.
+/// One cell of the grid: a picture of "Aa" set in the font, with the font's name below.
 struct FontThumbnailView: View {
     let font: FontCask
     let isSelected: Bool
     let isBusy: Bool
 
-    @State private var face: FontFace?
+    @State private var thumbnail: NSImage?
     @State private var isLoading = true
 
     private static let sample = "Aa"
@@ -16,13 +16,13 @@ struct FontThumbnailView: View {
     private var card: some View {
         GeometryReader { geometry in
             let side = geometry.size.width
+            // The saved thumbnail is drawn for a card of the grid's own width.
             ZStack {
-                if let face {
-                    Text(Self.sample)
-                        .font(Font(face.font(size: side * 0.36)))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.4)
-                        .padding(.horizontal, side * 0.08)
+                if let thumbnail {
+                    Image(nsImage: thumbnail)
+                        .renderingMode(.template)
+                        .foregroundStyle(.primary)
+                        .accessibilityHidden(true)
                 } else if isLoading {
                     ProgressView()
                         .controlSize(.small)
@@ -93,9 +93,9 @@ struct FontThumbnailView: View {
         }
         .contentShape(Rectangle())
         .task(id: Key(token: font.token, installedVersion: font.installedVersion)) {
-            let loaded = await FontThumbnails.shared.face(for: font)
+            let loaded = await FontThumbnails.shared.thumbnail(for: font)
             guard !Task.isCancelled else { return }
-            face = loaded
+            thumbnail = loaded
             isLoading = false
         }
     }
