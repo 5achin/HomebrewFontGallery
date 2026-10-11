@@ -25,24 +25,29 @@ struct ContentView: View {
                     FontDetailView(font: font, activity: model.activity, status: model.status)
                         // A set width, so the toolbar can leave exactly that much room above it.
                         .inspectorColumnWidth(Self.detailsWidth)
-                        // An empty stretch of toolbar as wide as the pane keeps the window's
-                        // buttons to the left of it, so the toolbar ends where the grid does.
+                        // A stretch of toolbar as wide as the pane holds the font's action at the
+                        // pane's top right, and keeps the window's own buttons over the grid.
                         .toolbar {
-                            if #available(macOS 26.0, *) {
-                                ToolbarItem {
-                                    toolbarGap
+                            if showingDetails.wrappedValue {
+                                if #available(macOS 26.0, *) {
+                                    ToolbarItem {
+                                        paneToolbarGap
+                                    }
+                                    .sharedBackgroundVisibility(.hidden)
+                                } else {
+                                    ToolbarItem {
+                                        paneToolbarGap
+                                    }
                                 }
-                                .sharedBackgroundVisibility(.hidden)
-                            } else {
                                 ToolbarItem {
-                                    toolbarGap
+                                    primaryAction
+                                        .frame(width: Self.actionWidth)
                                 }
                             }
                         }
                 }
             }
         }
-        // Searching from the sidebar leaves the far right of the toolbar to the font's action.
         .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search Fonts")
     }
 
@@ -90,9 +95,6 @@ struct ContentView: View {
                     .disabled(model.selectedFont == nil)
                     .help(detailsHidden ? "Show the selected font’s details." : "Hide the selected font’s details.")
                 }
-                ToolbarItem {
-                    primaryAction
-                }
             }
             .confirmationDialog(
                 "Uninstall “\(confirmingUninstall?.name ?? "")”?",
@@ -130,9 +132,14 @@ struct ContentView: View {
             }
     }
 
-    private var toolbarGap: some View {
-        // With the pane hidden there is nothing to leave room for.
-        Color.clear.frame(width: showingDetails.wrappedValue ? Self.detailsWidth - 12 : 0, height: 28).fixedSize()
+    /// The action is one width whatever its title, so the space beside it can be exact.
+    private static let actionWidth: CGFloat = 112
+
+    /// Empty toolbar that fills the rest of the pane's width, to the left of the action.
+    private var paneToolbarGap: some View {
+        Color.clear
+            .frame(width: Self.detailsWidth - Self.actionWidth - 18, height: 28)
+            .fixedSize()
     }
 
     /// The details pane slides out whenever a font is selected, unless it has been hidden.

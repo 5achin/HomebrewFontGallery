@@ -72,11 +72,11 @@ Guidelines: system controls, colours, fonts and spacing only, and no visible
   Unlike DiskFlasher, a gallery of hundreds of fonts needs a resizable window
   and a scrolling list, so the size-to-content rule doesn't apply to the font
   list. Sheets, settings and detail panes still follow it.
-- Sachin asked for the toolbar action to be coloured and last in the toolbar:
-  Install is a green prominent button, Uninstall a red one, at the far right.
-  This is a deliberate exception to the "regular toolbar button style" rule in
-  `~/Developer/AGENTS.md`. The search field lives in the sidebar so the action
-  can be rightmost.
+- Sachin asked for these, as deliberate exceptions to the toolbar rules in
+  `~/Developer/AGENTS.md`: Install is a green prominent button and Uninstall a
+  red one, at the top right of the details pane; the toolbar ends at the edge of
+  the grid, with the pane full height beside it; the All, Installed and Not
+  Installed filter is centred; the search field lives in the sidebar.
 - Search with `.searchable`. Filters for installed and not-installed fonts use a
   standard control, not custom chips.
 - The cask list loads by itself on launch. No refresh button.
