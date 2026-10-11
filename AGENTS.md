@@ -37,6 +37,9 @@ directly: Homebrew owns every install and uninstall.
 - App icon: a layered `AppIcon.icon` made in Icon Composer. Flat vector glyph in
   two or three layers on a gradient. No baked-in glass, shadow or mask, and
   nothing 3D or illustrative. Show it at the top of the README.
+  Its layers are four tiles and a letter on each, in four fonts, written by
+  `swift scripts/draw-icon.swift`. Change the script and run it again; don't
+  edit the SVGs by hand.
 
 ## Performance
 
