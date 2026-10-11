@@ -1,4 +1,6 @@
-<!-- The app icon (docs/app-icon.png) goes above the title once it exists. -->
+<p align="center">
+  <img src="docs/app-icon.png" alt="The Homebrew Font Gallery app icon" width="128">
+</p>
 
 <h1 align="center">Homebrew Font Gallery</h1>
 
@@ -86,6 +88,5 @@ Font casks install into your own `~/Library/Fonts`, so the app never asks for an
 
 Early development. The first version lists fonts, previews them, and installs and uninstalls them. Still to come:
 
-- An app icon.
 - Previews for fonts that Homebrew downloads as an archive. Today a font can be previewed before installing when Homebrew downloads it as a single font file or takes it from a folder on GitHub, which covers about 2,000 of the 2,600 fonts. The rest show a placeholder thumbnail and say "Install this font to preview it."
 - Fonts that come as an installer package (Apple's San Francisco and New York fonts) are left out of the list, because installing them needs an administrator password.
