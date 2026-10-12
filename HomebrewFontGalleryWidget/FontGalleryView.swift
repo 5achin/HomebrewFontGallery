@@ -90,31 +90,37 @@ private extension CachedFont {
     }
 }
 
-/// The font's name with the back and forward buttons, along the bottom of every size.
-private struct Footer: View {
+/// The font's name, along the top of every size.
+private struct FontTitle: View {
     let title: String
-    let size: String
-    /// The small widget has little room beside the arrows, so its title may take two lines.
-    var titleLines = 1
+    /// The small widget is narrow, so its title may take two lines.
+    var lines = 1
 
     var body: some View {
-        HStack(spacing: 6) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(titleLines)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            // One capsule holding both arrows, as the back and forward buttons of a toolbar are.
-            HStack(spacing: 0) {
-                arrow("chevron.left", step: -1, label: "Previous Font")
-                Divider()
-                    .frame(height: 14)
-                arrow("chevron.right", step: 1, label: "Next Font")
-            }
-            .glassSurface(Capsule())
+        Text(title)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(lines)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// The back and forward buttons, in the bottom corner of every size: one capsule
+/// holding both arrows, as the back and forward buttons of a toolbar are.
+private struct Arrows: View {
+    let size: String
+
+    var body: some View {
+        HStack(spacing: 0) {
+            arrow("chevron.left", step: -1, label: "Previous Font")
+            Divider()
+                .frame(height: 14)
+            arrow("chevron.right", step: 1, label: "Next Font")
         }
+        .glassSurface(Capsule())
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
     private func arrow(_ symbol: String, step: Int, label: String) -> some View {
@@ -170,13 +176,14 @@ private struct SmallSample: View {
     let size: String
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 2) {
+            FontTitle(title: font.name, lines: 2)
             Text("Aa")
-                .font(font.font(64))
+                .font(font.font(60))
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            Footer(title: font.name, size: size, titleLines: 2)
+            Arrows(size: size)
         }
     }
 }
@@ -188,12 +195,13 @@ private struct TextSample: View {
     let size: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
+            FontTitle(title: font.name)
             Text(text)
                 .font(font.font(pointSize))
                 .minimumScaleFactor(0.6)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            Footer(title: font.name, size: size)
+            Arrows(size: size)
         }
     }
 }
@@ -207,6 +215,7 @@ private struct DocumentSample: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            FontTitle(title: title)
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 10) {
                     linked(to: heading) {
@@ -239,7 +248,7 @@ private struct DocumentSample: View {
                 }
             }
             .minimumScaleFactor(0.7)
-            Footer(title: title, size: size)
+            Arrows(size: size)
         }
         // A click outside the three samples opens the heading's font.
         .widgetURL(FontLink.url(for: heading.token))
