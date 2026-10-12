@@ -102,35 +102,48 @@ private struct Footer: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Button(intent: RotateFontIntent(size: size, step: -1)) {
-                Image(systemName: "chevron.left")
+            // One capsule holding both arrows, as the back and forward buttons of a toolbar are.
+            HStack(spacing: 0) {
+                arrow("chevron.left", step: -1, label: "Previous Font")
+                Divider()
+                    .frame(height: 14)
+                arrow("chevron.right", step: 1, label: "Next Font")
             }
-            .accessibilityLabel("Previous Font")
-            Button(intent: RotateFontIntent(size: size, step: 1)) {
-                Image(systemName: "chevron.right")
-            }
-            .accessibilityLabel("Next Font")
+            .glassSurface(Capsule())
         }
-        .buttonBorderShape(.circle)
-        .controlSize(.small)
+    }
+
+    private func arrow(_ symbol: String, step: Int, label: String) -> some View {
+        Button(intent: RotateFontIntent(size: size, step: step)) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.primary)
+                .frame(width: 30, height: 26)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 }
 
 private extension View {
     func glassPanel(cornerRadius: CGFloat) -> some View {
-        modifier(GlassPanel(cornerRadius: cornerRadius))
+        glassSurface(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    func glassSurface(_ shape: some InsettableShape) -> some View {
+        modifier(GlassSurface(shape: shape))
     }
 }
 
-/// A frosted pane behind a view, with a hairline that catches the light along its top edge.
+/// A frosted surface behind a view, with a hairline that catches the light along its top edge.
 /// The system's own glass effect and glass buttons draw nothing inside a widget, so
 /// this is built from a material.
-private struct GlassPanel: ViewModifier {
-    let cornerRadius: CGFloat
+private struct GlassSurface<Surface: InsettableShape>: ViewModifier {
+    let shape: Surface
     @Environment(\.widgetRenderingMode) private var renderingMode
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         let highlight = LinearGradient(colors: [.white.opacity(0.7), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom)
         if renderingMode == .fullColor {
             content
@@ -139,8 +152,8 @@ private struct GlassPanel: ViewModifier {
                 .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
         } else {
             // With the Clear or Tinted widget style the system draws the widget as glass and
-            // paints every solid shape in one colour, so a pane has to stay faint to leave
-            // the code on it readable.
+            // paints every solid shape in one colour, so a surface has to stay faint to leave
+            // what is on it readable.
             content
                 .background(.white.opacity(0.12), in: shape)
                 .overlay(shape.strokeBorder(.white.opacity(0.25), lineWidth: 1))
