@@ -10,8 +10,7 @@ import Foundation
 let canvas = 1024.0
 let tileSide = 428.0
 let gap = 40.0
-/// The icon's own corner radius on this canvas.
-let iconRadius = 230.0
+let radius = 130.0
 /// The most room a letter may take up inside its tile.
 let letterBox = 250.0
 let letterColour = "#6A5FD6"
@@ -29,8 +28,6 @@ func number(_ value: Double) -> String {
 }
 
 let origin = (canvas - 2 * tileSide - gap) / 2
-/// The tiles' corners follow the icon's, so the bezel is the same width all the way round.
-let radius = iconRadius - origin
 let tiles: [(x: Double, y: Double)] = (0..<4).map { index in
     (origin + Double(index % 2) * (tileSide + gap), origin + Double(index / 2) * (tileSide + gap))
 }
