@@ -44,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         RunLog.write("=== Homebrew Fonts Gallery \(version) (\(build)) launched from \(Bundle.main.bundlePath), macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
         if !AppDelegate.isRunningTests {
+            WidgetRestart.restartIfStale()
             UpdateModel.shared.startAutomaticChecks()
         }
     }

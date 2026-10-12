@@ -90,6 +90,10 @@ directly: Homebrew owns every install and uninstall.
   The app's `Info.plist` registers the scheme, and `ContentView.onOpenURL` selects the
   font, clearing any search or filter that hides it. To try it without a widget, run
   `open -n -a "build/Release/Homebrew Fonts Gallery.app" homebrewfontgallery://font/font-lobster`.
+- Replacing the app leaves the old widget process running, and macOS keeps asking it
+  to draw, so every widget comes up blank. `WidgetRestart` ends a widget process older
+  than the widget file when the app starts. If widgets go blank after an install, open
+  the app once, or end the `HomebrewFontGalleryWidget` process.
 - To see the widget without placing it on the desktop, build, open the app once,
   then open `/System/Library/CoreServices/WidgetKit Simulator.app` and choose
   Homebrew Fonts Gallery. It draws every size through the real widget pipeline.

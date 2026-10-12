@@ -81,6 +81,9 @@ macOS runs an app opened straight from the Downloads folder from a read-only cop
 **An install or uninstall failed.**
 Choose **Help › Show Logs in Finder**. The log, `~/Library/Logs/HomebrewFontGallery/HomebrewFontGallery.log`, records every `brew` command the app ran, its exit status and its error output. Running the same command in Terminal usually shows the cause.
 
+**The widget is blank after an update.**
+Open the app once. It restarts a widget left running from the version before.
+
 **The widget says “No Fonts Yet”.**
 It couldn’t download the day’s fonts, most likely because the Mac was offline. It tries again every 15 minutes.
 
