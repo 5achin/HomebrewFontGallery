@@ -48,6 +48,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B7F0000000000000000000A3 /* Exceptions for "HomebrewFontGallery" folder in "HomebrewFontGallery" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B7F000000000000000000050 /* HomebrewFontGallery */;
+		};
 		B7F0000000000000000000A2 /* Exceptions for "HomebrewFontGalleryWidget" folder in "HomebrewFontGalleryWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -65,6 +72,9 @@
 		};
 		B7F000000000000000000020 /* HomebrewFontGallery */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B7F0000000000000000000A3 /* Exceptions for "HomebrewFontGallery" folder in "HomebrewFontGallery" target */,
+			);
 			path = HomebrewFontGallery;
 			sourceTree = "<group>";
 		};
@@ -440,6 +450,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HomebrewFontGallery/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Homebrew Fonts Gallery";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -470,6 +481,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HomebrewFontGallery/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Homebrew Fonts Gallery";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

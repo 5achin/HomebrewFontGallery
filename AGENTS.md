@@ -86,6 +86,10 @@ directly: Homebrew owns every install and uninstall.
 - `DailyFontCache` downloads the day's fonts into the widget's own caches folder
   on the first drawing of the day and removes the day before's. The back and
   forward buttons are `RotateFontIntent`, which counts presses for each size.
+- Clicking a widget opens `homebrewfontgallery://font/<token>` (`Shared/FontLink.swift`).
+  The app's `Info.plist` registers the scheme, and `ContentView.onOpenURL` selects the
+  font, clearing any search or filter that hides it. To try it without a widget, run
+  `open -n -a "build/Release/Homebrew Fonts Gallery.app" homebrewfontgallery://font/font-lobster`.
 - To see the widget without placing it on the desktop, build, open the app once,
   then open `/System/Library/CoreServices/WidgetKit Simulator.app` and choose
   Homebrew Fonts Gallery. It draws every size through the real widget pipeline.

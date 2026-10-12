@@ -10,6 +10,8 @@ struct ContentView: View {
     private static let detailsWidth: CGFloat = 400
     /// The font that was selected when the app was last used.
     @AppStorage("selectedFont") private var lastSelection = ""
+    /// A font the widget asked for before the fonts had loaded.
+    @State private var linkedFont: FontCask.ID?
 
     var body: some View {
         NavigationSplitView {
@@ -70,6 +72,10 @@ struct ContentView: View {
         .task {
             guard !AppDelegate.isRunningTests, ThumbnailExport.directory == nil else { return }
             await model.load()
+            if let token = linkedFont {
+                linkedFont = nil
+                show(token)
+            }
             if model.selection.isEmpty, !lastSelection.isEmpty {
                 WindowState.withoutAnimation {
                     model.selection = [lastSelection]
@@ -82,6 +88,16 @@ struct ContentView: View {
         }
         .onChange(of: showingDetails.wrappedValue) { _, isShowing in
             resizeWindow(paneIsShowing: isShowing)
+        }
+        // Clicking the widget opens the font it was showing.
+        .onOpenURL { url in
+            guard let token = FontLink.token(from: url) else { return }
+            RunLog.write("Opened from the widget to show \(token)")
+            if model.loadState == .loaded {
+                show(token)
+            } else {
+                linkedFont = token
+            }
         }
         .sheet(item: Binding(get: { updater.phase.map(UpdatePresentation.init) }, set: { if $0 == nil { updater.dismiss() } })) { _ in
             // The sheet stays up from one phase to the next, and reads the current one itself.
@@ -144,6 +160,15 @@ struct ContentView: View {
                     lastSelection = token
                 }
             }
+    }
+
+    /// Selects a font the widget asked for, and shows its details even if the pane was hidden.
+    private func show(_ token: FontCask.ID) {
+        WindowState.withoutAnimation {
+            if model.show(token) {
+                window.detailsHidden = false
+            }
+        }
     }
 
     /// The action is one width whatever its title, so the space beside it can be exact.

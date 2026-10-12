@@ -115,6 +115,19 @@ final class GalleryModel {
         case category(FontCategory.ID)
     }
 
+    /// Selects one font and makes sure the grid is showing it, whatever was being
+    /// searched for or filtered. It does nothing for a font Homebrew doesn't list.
+    @discardableResult
+    func show(_ token: FontCask.ID) -> Bool {
+        guard fonts.contains(where: { $0.token == token }) else { return false }
+        if !visibleFonts.contains(where: { $0.token == token }) {
+            searchText = ""
+            section = .all
+        }
+        selection = [token]
+        return true
+    }
+
     private let brew: BrewService
     private var task: Task<Void, Never>?
 

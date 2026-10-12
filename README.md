@@ -65,7 +65,7 @@ The app comes with a **Font Gallery** widget that shows a new set of Homebrew’
 - **Large** shows a paragraph of Lorem ipsum.
 - **Extra Large** shows a page with a heading, a paragraph, a list and some code, each in a different font. The fonts are chosen to go together: a plain serif or sans for the paragraph, a contrasting font of similar proportions for the heading, and the monospaced font that best matches the paragraph for the code.
 
-The arrows in the corner step back and forward through the day’s fonts, and each size keeps its own place. The widget downloads the day’s fonts the first time it is drawn and keeps them until the next day. It only reads them to draw the samples: nothing is installed.
+Click a widget to open the app with that font selected. In the extra large size, the heading, the text and the code each open their own font. The arrows in the corner step back and forward through the day’s fonts, and each size keeps its own place. The widget downloads the day’s fonts the first time it is drawn and keeps them until the next day. It only reads them to draw the samples: nothing is installed.
 
 ## Troubleshooting
 

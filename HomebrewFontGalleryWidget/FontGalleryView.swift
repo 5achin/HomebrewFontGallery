@@ -11,12 +11,15 @@ struct FontGalleryView: View {
             switch family {
             case .systemSmall:
                 SmallSample(font: font, size: family.sizeName)
+                    .widgetURL(FontLink.url(for: font.token))
             case .systemMedium:
                 TextSample(text: Samples.pangram, font: font, pointSize: 28, size: family.sizeName)
+                    .widgetURL(FontLink.url(for: font.token))
             case .systemExtraLarge:
                 document(fallback: font)
             default:
                 TextSample(text: Samples.loremIpsum, font: font, pointSize: 16, size: family.sizeName)
+                    .widgetURL(FontLink.url(for: font.token))
             }
         } else {
             NoFontsView()
@@ -156,30 +159,50 @@ private struct DocumentSample: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(Samples.heading)
-                        .font(heading.font(30))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.6)
-                    Text(Samples.paragraph)
-                        .font(paragraph.font(15))
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(Array(Samples.list.enumerated()), id: \.offset) { index, item in
-                            Text("\(index + 1). \(item)")
-                        }
+                    linked(to: heading) {
+                        Text(Samples.heading)
+                            .font(heading.font(30))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
                     }
-                    .font(paragraph.font(15))
+                    linked(to: paragraph) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(Samples.paragraph)
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(Array(Samples.list.enumerated()), id: \.offset) { index, item in
+                                    Text("\(index + 1). \(item)")
+                                }
+                            }
+                        }
+                        .font(paragraph.font(15))
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-                HighlightedCode(code: Samples.code)
-                    .font(code?.font(12) ?? .system(size: 12, design: .monospaced))
-                    .minimumScaleFactor(0.7)
-                    .padding(12)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                linked(to: code) {
+                    HighlightedCode(code: Samples.code)
+                        .font(code?.font(12) ?? .system(size: 12, design: .monospaced))
+                        .minimumScaleFactor(0.7)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
             }
             .minimumScaleFactor(0.7)
             Footer(title: title, size: size)
+        }
+        // A click outside the three samples opens the heading's font.
+        .widgetURL(FontLink.url(for: heading.token))
+    }
+
+    /// Makes a sample open its own font in the app when clicked.
+    @ViewBuilder
+    private func linked(to font: CachedFont?, @ViewBuilder content: () -> some View) -> some View {
+        if let font, let url = FontLink.url(for: font.token) {
+            Link(destination: url, label: content)
+                .buttonStyle(.plain)
+        } else {
+            content()
         }
     }
 
