@@ -28,8 +28,8 @@
       "layers" : [
         {
           "glass" : true,
-          "image-name" : "tiles.svg",
-          "name" : "tiles"
+          "image-name" : "card.svg",
+          "name" : "card"
         }
       ],
       "shadow" : {
@@ -38,8 +38,27 @@
       },
       "specular" : true,
       "translucency" : {
-        "enabled" : false,
-        "value" : 0.5
+        "enabled" : true,
+        "value" : 0.85
+      }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "cards-behind.svg",
+          "name" : "cards behind",
+          "opacity" : 0.45
+        }
+      ],
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.6
       }
     }
   ],
