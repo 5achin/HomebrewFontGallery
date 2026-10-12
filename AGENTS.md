@@ -91,8 +91,9 @@ directly: Homebrew owns every install and uninstall.
   font, clearing any search or filter that hides it. To try it without a widget, run
   `open -n -a "build/Release/Homebrew Fonts Gallery.app" homebrewfontgallery://font/font-lobster`.
 - Replacing the app leaves the old widget process running, and macOS keeps asking it
-  to draw, so every widget comes up blank. `WidgetRestart` ends a widget process older
-  than the widget file when the app starts. If widgets go blank after an install, open
+  to draw, so every widget comes up blank. `WidgetRestart` ends a widget process whose
+  file has gone when the app starts. It finds the process by name: the system no longer
+  knows the path of a process whose file was deleted, so looking by path finds nothing. If widgets go blank after an install, open
   the app once, or end the `HomebrewFontGalleryWidget` process.
 - The system's glass (`glassEffect`, `.buttonStyle(.glass)`) draws nothing inside a
   widget: the code pane and the buttons simply vanished. The widget's glass look is a

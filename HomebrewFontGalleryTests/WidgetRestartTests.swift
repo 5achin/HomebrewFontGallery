@@ -2,22 +2,39 @@ import XCTest
 @testable import HomebrewFontGallery
 
 final class WidgetRestartTests: XCTestCase {
-    func testAProcessFromBeforeTheInstallIsStale() {
-        let installed = Date(timeIntervalSince1970: 1_000_000)
-        let before = WidgetRestart.Process(id: 1, started: installed.addingTimeInterval(-60))
-        let after = WidgetRestart.Process(id: 2, started: installed.addingTimeInterval(60))
-        XCTAssertTrue(WidgetRestart.isStale(before, installed: installed))
-        XCTAssertFalse(WidgetRestart.isStale(after, installed: installed))
+    private let current = URL(fileURLWithPath: "/Applications/App.app/Contents/PlugIns/Widget.appex/Contents/MacOS/Widget")
+    private let installed = Date(timeIntervalSince1970: 1_000_000)
+
+    private func process(started offset: TimeInterval, from executable: String?) -> WidgetRestart.Process {
+        WidgetRestart.Process(id: 1, started: installed.addingTimeInterval(offset), executable: executable)
     }
 
-    func testFindsARunningProcessByTheFileItWasStartedFrom() throws {
+    func testAWidgetWhoseFileHasGoneIsStale() {
+        // What an update leaves: the old app was moved away and deleted under the widget.
+        XCTAssertTrue(WidgetRestart.isStale(process(started: -4, from: nil), current: current, installed: installed))
+        XCTAssertTrue(WidgetRestart.isStale(process(started: 60, from: nil), current: current, installed: installed))
+    }
+
+    func testAWidgetFromBeforeItsFileWasReplacedIsStale() {
+        XCTAssertTrue(WidgetRestart.isStale(process(started: -60, from: current.path), current: current, installed: installed))
+        XCTAssertFalse(WidgetRestart.isStale(process(started: 60, from: current.path), current: current, installed: installed))
+        XCTAssertFalse(WidgetRestart.isStale(process(started: -60, from: current.path), current: current, installed: nil))
+    }
+
+    func testAWidgetRunningFromAnotherCopyIsLeftAlone() {
+        let build = "/Users/someone/Developer/build/App.app/Contents/PlugIns/Widget.appex/Contents/MacOS/Widget"
+        XCTAssertFalse(WidgetRestart.isStale(process(started: -60, from: build), current: current, installed: installed))
+    }
+
+    func testFindsARunningProcessByItsName() throws {
         // The app the tests run inside stands in for the widget.
         let executable = try XCTUnwrap(Bundle.main.executableURL)
-        let found = WidgetRestart.processes(running: executable)
-        let own = try XCTUnwrap(found.first { $0.id == getpid() })
+        let own = try XCTUnwrap(WidgetRestart.processes(named: executable.lastPathComponent).first { $0.id == getpid() })
         XCTAssertLessThan(own.started, Date())
         XCTAssertGreaterThan(own.started, Date().addingTimeInterval(-3600))
-        XCTAssertEqual(WidgetRestart.processes(running: URL(fileURLWithPath: "/nowhere/at/all")), [])
+        XCTAssertEqual(own.executable.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path },
+                       executable.resolvingSymlinksInPath().path)
+        XCTAssertEqual(WidgetRestart.processes(named: "NoSuchProcessAtAll"), [])
     }
 
     func testAFileHasAnInstallDateAndAMissingOneHasNone() throws {
@@ -30,10 +47,9 @@ final class WidgetRestartTests: XCTestCase {
     }
 
     func testTheAppItselfIsNotStale() throws {
-        // It started after its own file was written, as a widget started after an update did.
         let executable = try XCTUnwrap(Bundle.main.executableURL)
-        let installed = try XCTUnwrap(WidgetRestart.installDate(of: executable))
-        let own = try XCTUnwrap(WidgetRestart.processes(running: executable).first { $0.id == getpid() })
-        XCTAssertFalse(WidgetRestart.isStale(own, installed: installed))
+        let installed = WidgetRestart.installDate(of: executable)
+        let own = try XCTUnwrap(WidgetRestart.processes(named: executable.lastPathComponent).first { $0.id == getpid() })
+        XCTAssertFalse(WidgetRestart.isStale(own, current: executable, installed: installed))
     }
 }
