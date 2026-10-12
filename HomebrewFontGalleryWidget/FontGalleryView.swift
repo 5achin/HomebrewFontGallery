@@ -117,15 +117,34 @@ private struct Footer: View {
 }
 
 private extension View {
-    /// A frosted pane behind the view, with a hairline that catches the light along its top edge.
-    /// The system's own glass effect and glass buttons draw nothing inside a widget, so
-    /// this is built from a material.
     func glassPanel(cornerRadius: CGFloat) -> some View {
+        modifier(GlassPanel(cornerRadius: cornerRadius))
+    }
+}
+
+/// A frosted pane behind a view, with a hairline that catches the light along its top edge.
+/// The system's own glass effect and glass buttons draw nothing inside a widget, so
+/// this is built from a material.
+private struct GlassPanel: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         let highlight = LinearGradient(colors: [.white.opacity(0.7), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom)
-        return background(.regularMaterial, in: shape)
-            .overlay(shape.strokeBorder(highlight, lineWidth: 1))
-            .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+        if renderingMode == .fullColor {
+            content
+                .background(.regularMaterial, in: shape)
+                .overlay(shape.strokeBorder(highlight, lineWidth: 1))
+                .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+        } else {
+            // With the Clear or Tinted widget style the system draws the widget as glass and
+            // paints every solid shape in one colour, so a pane has to stay faint to leave
+            // the code on it readable.
+            content
+                .background(.white.opacity(0.12), in: shape)
+                .overlay(shape.strokeBorder(.white.opacity(0.25), lineWidth: 1))
+        }
     }
 }
 
