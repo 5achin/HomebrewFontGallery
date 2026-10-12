@@ -94,13 +94,17 @@ private extension CachedFont {
 private struct Footer: View {
     let title: String
     let size: String
+    /// The small widget has little room beside the arrows, so its title may take two lines.
+    var titleLines = 1
 
     var body: some View {
         HStack(spacing: 6) {
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(titleLines)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
             // One capsule holding both arrows, as the back and forward buttons of a toolbar are.
             HStack(spacing: 0) {
@@ -172,7 +176,7 @@ private struct SmallSample: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            Footer(title: font.name, size: size)
+            Footer(title: font.name, size: size, titleLines: 2)
         }
     }
 }
