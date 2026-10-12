@@ -61,25 +61,19 @@ enum Samples {
         the reader along, line after line, without once asking for attention.
         """
     static let list = ["Headings draw the eye.", "Paragraphs carry the story.", "Code keeps every column aligned."]
+    /// Short enough, and in lines narrow enough, to fit its pane at 14 points in a wide font.
     static let code = """
         import Typography
 
-        // One font in today's gallery.
+        // Today's fonts, by name.
         struct Sample {
             let name: String
-            var size = 12.0
-            var isMonospaced = false
+            var size = 14.0
+            var isCode = false
         }
 
-        func label(_ sample: Sample) -> String {
-            if sample.isMonospaced {
-                return "\\(sample.name), code"
-            }
-            return "\\(sample.name), text"
-        }
-
-        for sample in gallery.prefix(8) {
-            print(label(sample))
+        for font in gallery.prefix(8) {
+            print("\\(font.name)")
         }
         """
 }
@@ -240,8 +234,8 @@ private struct DocumentSample: View {
 
                 linked(to: code) {
                     HighlightedCode(code: Samples.code)
-                        .font(code?.font(12) ?? .system(size: 12, design: .monospaced))
-                        .minimumScaleFactor(0.7)
+                        .font(code?.font(14) ?? .system(size: 14, design: .monospaced))
+                        .minimumScaleFactor(0.85)
                         .padding(12)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                         .glassPanel(cornerRadius: 12)
