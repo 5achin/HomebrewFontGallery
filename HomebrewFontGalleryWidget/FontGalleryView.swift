@@ -1,4 +1,5 @@
 import AppIntents
+import AppKit
 import SwiftUI
 import WidgetKit
 
@@ -115,6 +116,19 @@ private struct Footer: View {
     }
 }
 
+private extension View {
+    /// A frosted pane behind the view, with a hairline that catches the light along its top edge.
+    /// The system's own glass effect and glass buttons draw nothing inside a widget, so
+    /// this is built from a material.
+    func glassPanel(cornerRadius: CGFloat) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        let highlight = LinearGradient(colors: [.white.opacity(0.7), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom)
+        return background(.regularMaterial, in: shape)
+            .overlay(shape.strokeBorder(highlight, lineWidth: 1))
+            .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+    }
+}
+
 private struct SmallSample: View {
     let font: CachedFont
     let size: String
@@ -185,7 +199,7 @@ private struct DocumentSample: View {
                         .minimumScaleFactor(0.7)
                         .padding(12)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .glassPanel(cornerRadius: 12)
                 }
             }
             .minimumScaleFactor(0.7)
@@ -232,7 +246,8 @@ private struct HighlightedCode: View {
         case .type: .teal
         case .string: .red
         case .number: .purple
-        case .comment: .secondary
+        // The label colour itself: over a material, the secondary style is drawn at full strength.
+        case .comment: Color(nsColor: .secondaryLabelColor)
         }
     }
 }

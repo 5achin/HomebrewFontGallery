@@ -55,7 +55,8 @@ struct FontGalleryWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "FontGallery", provider: FontGalleryProvider()) { entry in
             FontGalleryView(entry: entry)
-                .containerBackground(.background, for: .widget)
+                // A material, so the desktop shows softly through the widget.
+                .containerBackground(.ultraThinMaterial, for: .widget)
         }
         .configurationDisplayName("Font Gallery")
         .description("A new set of Homebrew’s fonts every day.")

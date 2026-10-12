@@ -94,6 +94,13 @@ directly: Homebrew owns every install and uninstall.
   to draw, so every widget comes up blank. `WidgetRestart` ends a widget process older
   than the widget file when the app starts. If widgets go blank after an install, open
   the app once, or end the `HomebrewFontGalleryWidget` process.
+- The system's glass (`glassEffect`, `.buttonStyle(.glass)`) draws nothing inside a
+  widget: the code pane and the buttons simply vanished. The widget's glass look is a
+  material for its background and for the code pane, with a light hairline on the pane.
+- WidgetKit Simulator shows the copy of the app in `/Applications` when there is one, not
+  the build. To see the build there, copy it, give the copy and its widget other bundle
+  identifiers, sign both again ad hoc (the widget with its own entitlements) and register
+  it with `pluginkit -a`. Remove it again with `pluginkit -r` afterwards.
 - To see the widget without placing it on the desktop, build, open the app once,
   then open `/System/Library/CoreServices/WidgetKit Simulator.app` and choose
   Homebrew Fonts Gallery. It draws every size through the real widget pipeline.
