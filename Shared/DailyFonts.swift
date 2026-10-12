@@ -63,10 +63,10 @@ struct DailyFonts: Equatable {
     let code: [WidgetFont]
 
     /// More fonts are picked than are shown, because some will fail to download or
-    /// turn out to have no Latin letters. Each kind is picked separately, so every day
+    /// turn out to have no Latin letters, and some named "Mono" turn out not to be monospaced. Each kind is picked separately, so every day
     /// has plain fonts to pair the expressive ones with.
     static func pick(from catalogue: [WidgetFont], day: String, textCount: Int = 14, expressiveCount: Int = 8,
-                     codeCount: Int = 8) -> DailyFonts {
+                     codeCount: Int = 12) -> DailyFonts {
         var generator = SeededGenerator(seed: day)
         // Sorted first, so the order of the catalogue file doesn't change the day's fonts.
         let sorted = catalogue.sorted { $0.token < $1.token }

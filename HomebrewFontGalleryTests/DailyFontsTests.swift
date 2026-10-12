@@ -28,10 +28,10 @@ final class DailyFontsTests: XCTestCase {
     }
 
     func testPicksTheNumberAskedForWithoutRepeats() {
-        let picked = DailyFonts.pick(from: catalogue, day: "2026-10-11", textCount: 14, expressiveCount: 8, codeCount: 8)
+        let picked = DailyFonts.pick(from: catalogue, day: "2026-10-11", textCount: 14, expressiveCount: 8, codeCount: 12)
         XCTAssertEqual(Set(picked.text).count, 14)
         XCTAssertEqual(Set(picked.expressive).count, 8)
-        XCTAssertEqual(Set(picked.code).count, 8)
+        XCTAssertEqual(Set(picked.code).count, 12)
     }
 
     func testEachKindOfFontIsPickedSeparately() {

@@ -72,11 +72,11 @@ final class FontPairingTests: XCTestCase {
 
         // The best pair is a serif over a sans of nearly the same proportions, or the reverse.
         XCTAssertEqual(Set([combinations[0].heading, combinations[0].paragraph]), ["font-sans-a", "font-serif-c"])
-        // Code follows the paragraph's lowercase height.
-        for combination in combinations {
-            let tall = ["font-sans-a", "font-serif-c"].contains(combination.paragraph)
-            XCTAssertEqual(combination.code, tall ? "font-fixed-tall" : "font-fixed-short")
-        }
+        // The first combination's code follows its paragraph's lowercase height, and after
+        // that the code fonts take turns.
+        XCTAssertEqual(combinations[0].code, "font-fixed-tall")
+        XCTAssertEqual(combinations[1].code, "font-fixed-short")
+        XCTAssertEqual(combinations.filter { $0.code == "font-fixed-tall" }.count, 3)
         for combination in combinations.prefix(4) {
             XCTAssertFalse(combinations.prefix(4).contains { $0.heading == combination.paragraph && $0.paragraph == combination.heading })
         }
@@ -89,6 +89,27 @@ final class FontPairingTests: XCTestCase {
         let combinations = FontPairing.combinations(text: text, code: [], limit: 8)
         XCTAssertEqual(Set(combinations.map(\.heading)), ["font-swirly", "font-poster", "font-loopy"])
         XCTAssertEqual(Set(combinations.map(\.paragraph)), ["font-sans-a"])
+    }
+
+    func testEveryCodeFontIsShownBeforeAnyRepeats() {
+        let text = [
+            font("Sans A", .sans), font("Grot B", .sans), font("Serif C", .serif), font("Roman D", .serif),
+            font("Swirly", .expressive), font("Poster", .expressive),
+        ]
+        // All four suit the paragraphs about equally: without turns, one would take them all.
+        let code = [font("Fixed One", .sans, xHeight: 0.70), font("Fixed Two", .sans, xHeight: 0.71),
+                    font("Fixed Three", .sans, xHeight: 0.72), font("Fixed Four", .sans, xHeight: 0.73)]
+        let combinations = FontPairing.combinations(text: text, code: code, limit: 8)
+        XCTAssertEqual(Set(combinations.prefix(4).compactMap(\.code)).count, 4)
+        XCTAssertEqual(Set(combinations.compactMap(\.code)).count, 4)
+    }
+
+    func testTheNearestCodeFontIsChosenAmongTheLeastUsed() {
+        let paragraph = font("Sans A", .sans, xHeight: 0.72)
+        let code = [font("Fixed Tall", .sans, xHeight: 0.73), font("Fixed Short", .sans, xHeight: 0.6)]
+        XCTAssertEqual(FontPairing.codeFont(for: paragraph, from: code)?.token, "font-fixed-tall")
+        XCTAssertEqual(FontPairing.codeFont(for: paragraph, from: code, uses: ["font-fixed-tall": 1])?.token, "font-fixed-short")
+        XCTAssertNil(FontPairing.codeFont(for: paragraph, from: []))
     }
 
     func testNoPlainFontsMeansNoCombinations() {

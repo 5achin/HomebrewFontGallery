@@ -20,7 +20,11 @@ struct CachedDay: Codable, Hashable {
     var code: [CachedFont]
     /// The fonts to show together in the extra large widget, best matched first.
     var combinations: [FontCombination]
+    /// The way of choosing that made this record. A record made another way is chosen again,
+    /// so a new build's choices show the same day, not the next.
+    var choice = CachedDay.currentChoice
 
+    static let currentChoice = 2
     static let empty = CachedDay(day: "", text: [], code: [], combinations: [])
 
     func font(_ token: String?) -> CachedFont? {
@@ -101,7 +105,7 @@ enum DailyFontCache {
         let folder = folder(for: day)
         guard let data = try? Data(contentsOf: folder.appendingPathComponent(manifestName)),
               let cached = try? JSONDecoder().decode(CachedDay.self, from: data),
-              !cached.text.isEmpty,
+              !cached.text.isEmpty, cached.choice == CachedDay.currentChoice,
               (cached.text + cached.code).allSatisfy({ FileManager.default.fileExists(atPath: folder.appendingPathComponent($0.file).path) })
         else { return nil }
         return cached

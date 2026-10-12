@@ -37,7 +37,8 @@ struct FontCombination: Codable, Hashable {
 /// 3. Under the contrast, share a skeleton: the lowercase should be about as tall and as wide
 ///    in both, so the two sit together at the same size.
 /// 4. Fonts drawn as one family ("Noto Sans" with "Noto Serif") are already matched.
-/// 5. Code takes the monospaced font whose lowercase is closest in height to the paragraph's.
+/// 5. Code takes the monospaced font whose lowercase is closest in height to the paragraph's,
+///    among those the day has shown least, so every monospaced font gets its turn.
 enum FontPairing {
     struct Candidate: Hashable {
         let token: String
@@ -94,6 +95,7 @@ enum FontPairing {
         }
 
         var chosen: [FontCombination] = []
+        var codeUses: [String: Int] = [:]
         var headings = Set<String>()
         var paragraphs: [String: Int] = [:]
         for most in [2, Int.max] {
@@ -104,16 +106,23 @@ enum FontPairing {
                 if mirrored, most == 2 { continue }
                 headings.insert(pair.heading.token)
                 paragraphs[pair.paragraph.token, default: 0] += 1
-                chosen.append(FontCombination(heading: pair.heading.token, paragraph: pair.paragraph.token,
-                                              code: codeFont(for: pair.paragraph, from: code)?.token))
+                let codeFont = codeFont(for: pair.paragraph, from: code, uses: codeUses)
+                if let codeFont {
+                    codeUses[codeFont.token, default: 0] += 1
+                }
+                chosen.append(FontCombination(heading: pair.heading.token, paragraph: pair.paragraph.token, code: codeFont?.token))
             }
         }
         return chosen
     }
 
-    /// The monospaced font whose lowercase is closest in height to the paragraph's.
-    static func codeFont(for paragraph: Candidate, from code: [Candidate]) -> Candidate? {
+    /// The monospaced font whose lowercase is closest in height to the paragraph's, out of
+    /// the ones used least so far. Without that, one font would suit most of a day's paragraphs.
+    static func codeFont(for paragraph: Candidate, from code: [Candidate], uses: [String: Int] = [:]) -> Candidate? {
         code.min {
+            let firstUses = uses[$0.token, default: 0]
+            let secondUses = uses[$1.token, default: 0]
+            if firstUses != secondUses { return firstUses < secondUses }
             let first = abs($0.traits.xHeight - paragraph.traits.xHeight)
             let second = abs($1.traits.xHeight - paragraph.traits.xHeight)
             return first != second ? first < second : $0.token < $1.token
