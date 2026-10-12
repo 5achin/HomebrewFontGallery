@@ -58,6 +58,8 @@ The app looks for a newer version when you open it and once a day, and offers to
 
 The app comes with a **Font Gallery** widget that shows a new set of Homebrew’s fonts every day. Open the app once, then right-click the desktop, choose **Edit Widgets…** and find **Homebrew Fonts Gallery** in the list.
 
+<p align="center"><img src="docs/widgets.png" alt="The Font Gallery widget in its four sizes: a paragraph in the large size, a pangram in the medium, “Aa” in two small ones, and a page with a heading, a paragraph, a list and highlighted code in the extra large" width="762"></p>
+
 - **Small** shows “Aa”.
 - **Medium** shows “The quick brown fox jumps over the lazy dog.”
 - **Large** shows a paragraph of Lorem ipsum.
